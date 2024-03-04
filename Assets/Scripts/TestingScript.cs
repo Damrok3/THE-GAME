@@ -5,6 +5,7 @@ using UnityEditor;
 
 public class TestingScript : MonoBehaviour
 {
+    [SerializeField] private HeatMapVisual heatMapVisual;
     private Grid grid;
     private float mouseMoveTimer;
     private float mouseMoveTimerMax = .01f;
@@ -12,7 +13,8 @@ public class TestingScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        grid = new Grid(20, 10, 10f, new Vector3(0,0));
+        grid = new Grid(20, 20, 5f, new Vector3(0, 0));
+        heatMapVisual.SetGrid(grid);
     }
 
     // Update is called once per frame
@@ -20,13 +22,9 @@ public class TestingScript : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            grid.SetValue(GetMouseWorldPosition(), 56);
+            Vector3 position = GetMouseWorldPosition();
+            grid.AddValue(position, 100, 0, 5);
         }
-        if (Input.GetMouseButtonDown(1))
-        {
-            Debug.Log(grid.GetValue(GetMouseWorldPosition()));
-        }
-
 
     }
 

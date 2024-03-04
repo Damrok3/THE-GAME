@@ -33,22 +33,32 @@ public class Grid
         this.originPosition = originPosition;
 
         gridArray = new int[width, height];
-        debugTextArray = new TextMesh[width, height];
 
+        bool showDebug = true;
+        
 
-        for (int x = 0; x < gridArray.GetLength(0); x++)
+        if(showDebug)
         {
-            for (int y = 0; y < gridArray.GetLength(1); y++)
+
+            debugTextArray = new TextMesh[width, height];
+            for (int x = 0; x < gridArray.GetLength(0); x++)
             {
-                debugTextArray[x, y] = CreateWorldText(null, gridArray[x, y].ToString(), GetWorldPosition(x, y) + new Vector3(cellSize, cellSize) * 0.5f, 40, Color.white, TextAnchor.MiddleCenter, TextAlignment.Center, 1);
-                Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x, y + 1), Color.white, 100f);
-                Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x + 1, y), Color.white, 100f);
+                for (int y = 0; y < gridArray.GetLength(1); y++)
+                {
+                    debugTextArray[x, y] = CreateWorldText(null, gridArray[x, y].ToString(), GetWorldPosition(x, y) + new Vector3(cellSize, cellSize) * 0.5f, 40, Color.white, TextAnchor.MiddleCenter, TextAlignment.Center, 1);
+                    Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x, y + 1), Color.white, 100f);
+                    Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x + 1, y), Color.white, 100f);
+                }
+
             }
+            Debug.DrawLine(GetWorldPosition(0, height), GetWorldPosition(width, height), Color.white, 100f);
+            Debug.DrawLine(GetWorldPosition(width, 0), GetWorldPosition(width, height), Color.white, 100f);
 
+            //lambda expression that changes the value of debug text array subscribed to the event
+            OnGridValueChanged += (object sender, OnGridValueChangedEventArgs eventArgs) => {
+                debugTextArray[eventArgs.x, eventArgs.y].text = gridArray[eventArgs.x,eventArgs.y].ToString();
+            };
         }
-        Debug.DrawLine(GetWorldPosition(0, height), GetWorldPosition(width, height), Color.white, 100f);
-        Debug.DrawLine(GetWorldPosition(width, 0), GetWorldPosition(width, height), Color.white, 100f);
-
     }
 
     public int GetWidth()
@@ -82,15 +92,20 @@ public class Grid
     {
         if (x >= 0 && y >= 0 && x < width && y < height)
         {
-            gridArray[x, y] = value;
-            debugTextArray[x, y].text = gridArray[x, y].ToString();
+            gridArray[x, y] = Mathf.Clamp(value, HEAT_MAP_MIN_VALUE, HEAT_MAP_MAX_VALUE);
 
             //null checking the event in case there is no subscribers attached to it and then invoking the event while passing values into it
             OnGridValueChanged?.Invoke(this, new OnGridValueChangedEventArgs { x = x, y = y });
-            
+
         }
     }
-    public int GetValue(int x, int y) 
+
+    public void AddValue(int x, int y, int value)
+    {
+        SetValue(x, y, GetValue(x, y) + value);
+    }
+
+    public int GetValue(int x, int y)
     {
         if (x >= 0 && y >= 0 && x < width && y < height)
         {
@@ -106,6 +121,38 @@ public class Grid
         int x, y;
         GetXY(worldPosition, out x, out y);
         return GetValue(x, y);
+    }
+
+    public void AddValue(Vector3 worldPosition, int value, int fullValueRange, int totalRange)
+    {
+        int lowerValueAmount = Mathf.RoundToInt((float)value / (totalRange - fullValueRange));
+
+        GetXY(worldPosition, out int originX, out int originY);
+        for (int x = 0; x < totalRange; x++)
+        {
+            for (int y = 0; y < totalRange - x; y++)
+            {
+                int radius = x + y;
+                int addValueAmount = value;
+                if(radius > fullValueRange)
+                {
+                    addValueAmount -= lowerValueAmount  * (radius - fullValueRange);
+                }
+                AddValue(originX + x, originY + y, addValueAmount);
+                if(x != 0)
+                {
+                    AddValue(originX - x, originY + y, addValueAmount);
+                }
+                if(y != 0)
+                {
+                    AddValue(originX + x, originY - y, addValueAmount);
+                    if(x != 0)
+                    {
+                        AddValue(originX - x, originY - y, addValueAmount);
+                    }
+                }
+            }
+        }
     }
     public Vector3 GetWorldPosition(int x, int y)
     {
