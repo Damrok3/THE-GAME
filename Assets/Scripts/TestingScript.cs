@@ -1,31 +1,33 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 public class TestingScript : MonoBehaviour
 {
     private Grid grid;
-    private Grid grid2;
+    private float mouseMoveTimer;
+    private float mouseMoveTimerMax = .01f;
+
     // Start is called before the first frame update
     void Start()
     {
-        //grid = new Grid(4, 2, 10f, new Vector3(20,0));
-        //grid2 = new Grid(10, 3, 5f, new Vector3(0,20));
+        grid = new Grid(20, 10, 10f, new Vector3(0,0));
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButtonDown(0)) 
+        if (Input.GetMouseButtonDown(0))
         {
             grid.SetValue(GetMouseWorldPosition(), 56);
-            grid2.SetValue(GetMouseWorldPosition(), 56);
         }
         if (Input.GetMouseButtonDown(1))
         {
             Debug.Log(grid.GetValue(GetMouseWorldPosition()));
-            Debug.Log(grid2.GetValue(GetMouseWorldPosition()));
         }
+
+
     }
 
     private Vector2 GetMouseWorldPosition()
@@ -35,4 +37,7 @@ public class TestingScript : MonoBehaviour
         Vector2 position = Camera.main.ScreenToWorldPoint(screenPosition);
         return position;
     }
+
 }
+
+

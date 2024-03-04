@@ -1,9 +1,23 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Grid
 {
+    public const int HEAT_MAP_MAX_VALUE = 100;
+    public const int HEAT_MAP_MIN_VALUE = 0;
+
+    //.net standard for declaring an event handler that can take class object and store its data as well as trigger certain things
+    public event EventHandler<OnGridValueChangedEventArgs> OnGridValueChanged;
+
+    //declaration of a class that objects of can be passed inside of the event
+    public class OnGridValueChangedEventArgs : EventArgs
+    {
+        public int x;
+        public int y;
+    }
+
     private int width;
     private int height;
     private float cellSize;
@@ -37,11 +51,19 @@ public class Grid
 
     }
 
-    public void SetValue(Vector3 worldPosition, int value)
+    public int GetWidth()
     {
-        int x, y;
-        GetXY(worldPosition, out x, out y);
-        SetValue(x, y, value);
+        return width;
+    }
+
+    public int GetHeight()
+    {
+        return height;
+    }
+
+    public float GetCellSize()
+    {
+        return cellSize;
     }
 
     private void GetXY(Vector3 worldPosition, out int x, out int y)
@@ -50,12 +72,22 @@ public class Grid
         x = Mathf.FloorToInt((worldPosition - originPosition).x / cellSize);
         y = Mathf.FloorToInt((worldPosition - originPosition).y / cellSize);
     }
+    public void SetValue(Vector3 worldPosition, int value)
+    {
+        int x, y;
+        GetXY(worldPosition, out x, out y);
+        SetValue(x, y, value);
+    }
     public void SetValue(int x, int y, int value)
     {
         if (x >= 0 && y >= 0 && x < width && y < height)
         {
             gridArray[x, y] = value;
             debugTextArray[x, y].text = gridArray[x, y].ToString();
+
+            //null checking the event in case there is no subscribers attached to it and then invoking the event while passing values into it
+            OnGridValueChanged?.Invoke(this, new OnGridValueChangedEventArgs { x = x, y = y });
+            
         }
     }
     public int GetValue(int x, int y) 
@@ -75,7 +107,7 @@ public class Grid
         GetXY(worldPosition, out x, out y);
         return GetValue(x, y);
     }
-    private Vector3 GetWorldPosition(int x, int y)
+    public Vector3 GetWorldPosition(int x, int y)
     {
         return new Vector3(x, y) * cellSize + originPosition;
     }
