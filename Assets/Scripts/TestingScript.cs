@@ -9,19 +9,16 @@ public class TestingScript : MonoBehaviour
     [SerializeField] private HeatMapBoolVisual heatMapBoolVisual;
     [SerializeField] private HeatMapGenericVisual heatMapGenericVisual;
     private Grid<HeatMapGridObject> grid;
-    private Grid<StringGridObject> stringGrid;
-
-    private float mouseMoveTimer;
-    private float mouseMoveTimerMax = .01f;
+    //private Grid<StringGridObject> stringGrid;
 
     // Start is called before the first frame update
     void Start()
     {
-        //grid = new Grid<HeatMapGridObject>(20, 10, 10f, new Vector3(-20f, -40f), (Grid<HeatMapGridObject> g, int x, int y) => new HeatMapGridObject(g, x, y));
-        stringGrid = new Grid<StringGridObject>(20, 10, 10f, new Vector3(-20f, -40f), (Grid<StringGridObject> g, int x, int y) => new StringGridObject(g, x, y));
+        grid = new Grid<HeatMapGridObject>(20, 10, 10f, new Vector3(-20f, -40f), (Grid<HeatMapGridObject> g, int x, int y) => new HeatMapGridObject(g, x, y));
+        //stringGrid = new Grid<StringGridObject>(20, 10, 10f, new Vector3(-20f, -40f), (Grid<StringGridObject> g, int x, int y) => new StringGridObject(g, x, y));
         //heatMapVisual.SetGrid(grid);
         //heatMapBoolVisual.SetGrid(grid);
-        //heatMapGenericVisual.SetGrid(grid);
+        heatMapGenericVisual.SetGrid(grid);
     }
 
     // Update is called once per frame
@@ -29,24 +26,24 @@ public class TestingScript : MonoBehaviour
     {
         Vector3 position = GetMouseWorldPosition();
 
-        //if (Input.GetMouseButtonDown(0))
-        //{
-        //    HeatMapGridObject heatMapGridObject = grid.GetGridObject(position);
-        //    if (heatMapGridObject != null)
-        //    {
-        //        heatMapGridObject.AddValue(5);
-        //    }
-        //    //grid.AddValue(position, 100, 0, 5);
-        //    //grid.SetValue(position, true);
-        //}
+        if (Input.GetMouseButtonDown(0))
+        {
+            HeatMapGridObject heatMapGridObject = grid.GetGridObject(position);
+            if (heatMapGridObject != null)
+            {
+                heatMapGridObject.AddValue(5);
+            }
+            //grid.AddValue(position, 100, 0, 5);
+            //grid.SetValue(position, true);
+        }
 
-        if (Input.GetKeyDown(KeyCode.A)) { stringGrid.GetGridObject(position).AddLetter("A"); }
-        if (Input.GetKeyDown(KeyCode.B)) { stringGrid.GetGridObject(position).AddLetter("B"); }
-        if (Input.GetKeyDown(KeyCode.C)) { stringGrid.GetGridObject(position).AddLetter("C"); }
+        //if (Input.GetKeyDown(KeyCode.A)) { stringGrid.GetGridObject(position).AddLetter("A"); }
+        //if (Input.GetKeyDown(KeyCode.B)) { stringGrid.GetGridObject(position).AddLetter("B"); }
+        //if (Input.GetKeyDown(KeyCode.C)) { stringGrid.GetGridObject(position).AddLetter("C"); }
 
-        if (Input.GetKeyDown(KeyCode.Alpha1)) { stringGrid.GetGridObject(position).AddNumber("1"); }
-        if (Input.GetKeyDown(KeyCode.Alpha2)) { stringGrid.GetGridObject(position).AddNumber("2"); }
-        if (Input.GetKeyDown(KeyCode.Alpha3)) { stringGrid.GetGridObject(position).AddNumber("3"); }
+        //if (Input.GetKeyDown(KeyCode.Alpha1)) { stringGrid.GetGridObject(position).AddNumber("1"); }
+        //if (Input.GetKeyDown(KeyCode.Alpha2)) { stringGrid.GetGridObject(position).AddNumber("2"); }
+        //if (Input.GetKeyDown(KeyCode.Alpha3)) { stringGrid.GetGridObject(position).AddNumber("3"); }
 
     }
 

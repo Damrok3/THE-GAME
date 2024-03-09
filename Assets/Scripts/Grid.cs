@@ -25,6 +25,10 @@ public class Grid<TGridObject>
     private TGridObject[,] gridArray;
     private TextMesh[,] debugTextArray;
 
+    private int debugTextSize = 10;
+    bool showDebugGrid = true;
+    bool showDebugText = true;
+
     public Grid(int width, int height, float cellSize, Vector3 originPosition, Func<Grid<TGridObject>, int, int, TGridObject> createGridObject)
     {
         this.width = width;
@@ -43,10 +47,7 @@ public class Grid<TGridObject>
             }
         }
 
-        bool showDebug = true;
-        
-
-        if(showDebug)
+        if(showDebugGrid)
         {
 
             debugTextArray = new TextMesh[width, height];
@@ -54,7 +55,10 @@ public class Grid<TGridObject>
             {
                 for (int y = 0; y < gridArray.GetLength(1); y++)
                 {
-                    debugTextArray[x, y] = CreateWorldText(null, gridArray[x, y]?.ToString(), GetWorldPosition(x, y) + new Vector3(cellSize, cellSize) * 0.5f, 40, Color.white, TextAnchor.MiddleCenter, TextAlignment.Center, 1);
+                    if (showDebugText) 
+                    {
+                        debugTextArray[x, y] = CreateWorldText(null, gridArray[x, y]?.ToString(), GetWorldPosition(x, y) + new Vector3(cellSize, cellSize) * 0.5f, debugTextSize, Color.white, TextAnchor.MiddleCenter, TextAlignment.Center, 1);
+                    }
                     Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x, y + 1), Color.white, 100f);
                     Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x + 1, y), Color.white, 100f);
                 }
@@ -85,7 +89,7 @@ public class Grid<TGridObject>
         return cellSize;
     }
 
-    private void GetXY(Vector3 worldPosition, out int x, out int y)
+    public void GetXY(Vector3 worldPosition, out int x, out int y)
     {
         //with the cellsize of 10 the worldPosition 5 will be on grid 0 and the worldPosition 15 will be on grid 1
         x = Mathf.FloorToInt((worldPosition - originPosition).x / cellSize);
