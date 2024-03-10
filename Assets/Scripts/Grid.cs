@@ -27,7 +27,7 @@ public class Grid<TGridObject>
 
     private int debugTextSize = 10;
     bool showDebugGrid = true;
-    bool showDebugText = true;
+    bool showDebugText = false;
 
     public Grid(int width, int height, float cellSize, Vector3 originPosition, Func<Grid<TGridObject>, int, int, TGridObject> createGridObject)
     {
@@ -68,9 +68,12 @@ public class Grid<TGridObject>
             Debug.DrawLine(GetWorldPosition(width, 0), GetWorldPosition(width, height), Color.white, 100f);
 
             //lambda expression that changes the value of debug text array subscribed to the event
-            OnGridObjectChanged += (object sender, OnGridObjectChangedEventArgs eventArgs) => {
-                debugTextArray[eventArgs.x, eventArgs.y].text = gridArray[eventArgs.x,eventArgs.y]?.ToString();
-            };
+            if (showDebugText)
+            {
+                OnGridObjectChanged += (object sender, OnGridObjectChangedEventArgs eventArgs) => {
+                    debugTextArray[eventArgs.x, eventArgs.y].text = gridArray[eventArgs.x,eventArgs.y]?.ToString();
+                };
+            }
         }
     }
 
@@ -116,6 +119,11 @@ public class Grid<TGridObject>
     public void TriggerGridObjectChanged(int x, int y)
     {
         OnGridObjectChanged?.Invoke(this, new OnGridObjectChangedEventArgs { x = x, y = y });
+    }
+    
+    public void TriggerGridObjectChanged()
+    {
+        OnGridObjectChanged?.Invoke(this, new OnGridObjectChangedEventArgs { });
     }
 
     //METHOD SPECIFICALLY FOR THE HEATMAP

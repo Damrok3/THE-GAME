@@ -5,14 +5,14 @@ using UnityEngine;
 public class Testing : MonoBehaviour
 {
     [SerializeField] GameObject player;
-    public bool showDebugGrid = true;
+    [SerializeField] HeatMapGenericVisual heatMap;
 
     private Pathfinding pathfinding;
     private float cellSize = 5f;
     private void Start()
     {
         pathfinding = new Pathfinding(160, 100, cellSize);
-
+        heatMap.SetGrid(pathfinding.GetGrid());
     }
     private void Update()
     {
@@ -34,10 +34,18 @@ public class Testing : MonoBehaviour
                 {
                     Debug.DrawLine( new Vector3(path[i].x, path[i].y) * cellSize + Vector3.one * cellSize/2,
                                     new Vector3(path[i + 1].x, path[i + 1].y) * cellSize + Vector3.one * cellSize/2,
-                                    Color.green,
+                                    Color.red,
                                     2f);
                 }
             }
+        }
+        if(Input.GetMouseButtonDown(1))
+        {
+            Vector3 position = GetMouseWorldPosition();
+            PathNode node = pathfinding.GetGrid().GetGridObject(position);
+            node.isWalkable = !node.isWalkable;
+            //pathfinding.GetGrid().GetXY(position, out int x, out int y);
+            pathfinding.GetGrid().TriggerGridObjectChanged();
         }
     }
     private Vector2 GetMouseWorldPosition()

@@ -18,7 +18,7 @@ public class TestingScript : MonoBehaviour
         //stringGrid = new Grid<StringGridObject>(20, 10, 10f, new Vector3(-20f, -40f), (Grid<StringGridObject> g, int x, int y) => new StringGridObject(g, x, y));
         //heatMapVisual.SetGrid(grid);
         //heatMapBoolVisual.SetGrid(grid);
-        heatMapGenericVisual.SetGrid(grid);
+        //heatMapGenericVisual.SetGrid(grid);
     }
 
     // Update is called once per frame

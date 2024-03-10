@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class HeatMapGenericVisual : MonoBehaviour
 {
-    private Grid<HeatMapGridObject> grid;
+    private Grid<PathNode> grid;
     private Mesh mesh;
     private bool updateMesh = false;
 
@@ -13,12 +13,12 @@ public class HeatMapGenericVisual : MonoBehaviour
         mesh = new Mesh();
         GetComponent<MeshFilter>().mesh = mesh;
     }
-    private void Grid_OnGridValueChanged(object sender, Grid<HeatMapGridObject>.OnGridObjectChangedEventArgs e)
+    private void Grid_OnGridValueChanged(object sender, Grid<PathNode>.OnGridObjectChangedEventArgs e)
     {
         updateMesh = true;
         UpdateHeatMapVisual();
     }
-    public void SetGrid(Grid<HeatMapGridObject> grid)
+    public void SetGrid(Grid<PathNode> grid)
     {
         this.grid = grid;
         UpdateHeatMapVisual();
@@ -42,9 +42,9 @@ public class HeatMapGenericVisual : MonoBehaviour
             {
                 int index = x * grid.GetHeight() + y;
                 Vector3 quadSize = new Vector3(1, 1) * grid.GetCellSize();
-                HeatMapGridObject gridObject = grid.GetGridObject(x, y);
-                float gridValueNormalized = gridObject.GetValueNormalized();
-                Vector2 gridValueUV = new Vector2(gridValueNormalized, 0f);
+                PathNode gridObject = grid.GetGridObject(x, y);
+                float gridValue = gridObject.isWalkable ? 0f : 0.1f;
+                Vector2 gridValueUV = new Vector2(gridValue, 0f);
                 MeshUtils.AddToMeshArrays(vertices, uv, triangles, index, grid.GetWorldPosition(x, y) + quadSize * .5f, 0f, quadSize, gridValueUV, gridValueUV);
             }
         }
