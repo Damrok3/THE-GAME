@@ -84,6 +84,45 @@ public class Pathfinding
         return null;
     }
 
+    public void InitializeWalls(GameObject [] wallArray)
+    {
+        for (int x = 0; x < grid.GetWidth(); x++)
+        {
+            for(int y = 0; y < grid.GetHeight(); y ++)
+            {
+                PathNode node = grid.GetGridObject(x, y);
+                float xPos = node.x;
+                float yPos = node.y;
+                grid.GetXYtoWorldPosition(ref xPos, ref yPos);
+                Vector3 gridNodePosition = new Vector3(xPos, yPos);
+                foreach (GameObject wall in wallArray)
+                {
+                    BoxCollider2D c = wall.GetComponent<BoxCollider2D>();
+                    //node bottom left corner
+                    if(MyFunctions.IsInsideCollider(c, gridNodePosition))
+                    {
+                        node.isWalkable = false;
+                    }
+                    //bottom right
+                    if(MyFunctions.IsInsideCollider(c, gridNodePosition + new Vector3(grid.GetCellSize(), 0)))
+                    {
+                        node.isWalkable = false;
+                    }
+                    //upper left
+                    if(MyFunctions.IsInsideCollider(c, gridNodePosition + new Vector3(0, grid.GetCellSize())))
+                    {
+                        node.isWalkable = false;
+                    }
+                    //upper right
+                    if(MyFunctions.IsInsideCollider(c, gridNodePosition + new Vector3(grid.GetCellSize(), grid.GetCellSize())))
+                    {
+                        node.isWalkable = false;
+                    }
+                }
+            }
+        }
+        
+    }
     public List<Vector3> GetPathVector3List(List<PathNode> path)
     {
         List<Vector3> vec3Path = new List<Vector3>();

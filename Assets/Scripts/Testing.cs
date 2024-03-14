@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class Testing : MonoBehaviour
 {
-    [SerializeField] GameObject player;
-    [SerializeField] HeatMapGenericVisual heatMap;
+    [SerializeField] private GameObject player; 
+    [SerializeField] private HeatMapGenericVisual heatMap;
+    private GameObject [] wallList;
 
     private Pathfinding pathfinding;
     private float cellSize = 5f;
@@ -13,6 +14,9 @@ public class Testing : MonoBehaviour
     {
         pathfinding = new Pathfinding(160, 100, cellSize);
         heatMap.SetGrid(pathfinding.GetGrid());
+        wallList = GameObject.FindGameObjectsWithTag("wall");
+        pathfinding.InitializeWalls(wallList);
+        pathfinding.GetGrid().TriggerGridObjectChanged();
     }
     private void Update()
     {
@@ -23,17 +27,14 @@ public class Testing : MonoBehaviour
             pathfinding.GetGrid().GetXY(mouseWorldPosition, out int x, out int y);
             pathfinding.GetGrid().GetXY(player.transform.position, out int Px, out int Py);
             List<PathNode> path = pathfinding.FindPath(Px, Py, x, y);
+            // vvvv this will be usefull with connecting path to enemy movement
             List<Vector3> vec3Path = pathfinding.GetPathVector3List(path);
-            foreach (Vector3 vec3 in vec3Path)
-            {
-                Debug.Log(vec3);
-            }
             if (path != null)
             {
                 for (int i = 0; i < path.Count - 1; i++)
                 {
-                    Debug.DrawLine( new Vector3(path[i].x, path[i].y) * cellSize + Vector3.one * cellSize/2,
-                                    new Vector3(path[i + 1].x, path[i + 1].y) * cellSize + Vector3.one * cellSize/2,
+                    Debug.DrawLine(new Vector3(path[i].x, path[i].y) * cellSize + Vector3.one * cellSize / 2,
+                                    new Vector3(path[i + 1].x, path[i + 1].y) * cellSize + Vector3.one * cellSize / 2,
                                     Color.red,
                                     2f);
                 }

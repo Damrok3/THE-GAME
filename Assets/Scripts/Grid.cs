@@ -38,16 +38,16 @@ public class Grid<TGridObject>
 
         gridArray = new TGridObject[width, height];
 
-        for(int x = 0; x < gridArray.GetLength(0); x++)
+        for (int x = 0; x < gridArray.GetLength(0); x++)
         {
-            for(int y = 0; y < gridArray.GetLength(1); y++)
+            for (int y = 0; y < gridArray.GetLength(1); y++)
             {
                 //here a lambda function is called that sets the default for each field, we're passing it by using Func in constructor which is like a delegate with the difference that it can return things
                 gridArray[x, y] = createGridObject(this, x, y);
             }
         }
 
-        if(showDebugGrid)
+        if (showDebugGrid)
         {
 
             debugTextArray = new TextMesh[width, height];
@@ -55,7 +55,7 @@ public class Grid<TGridObject>
             {
                 for (int y = 0; y < gridArray.GetLength(1); y++)
                 {
-                    if (showDebugText) 
+                    if (showDebugText)
                     {
                         debugTextArray[x, y] = CreateWorldText(null, gridArray[x, y]?.ToString(), GetWorldPosition(x, y) + new Vector3(cellSize, cellSize) * 0.5f, debugTextSize, Color.white, TextAnchor.MiddleCenter, TextAlignment.Center, 1);
                     }
@@ -70,8 +70,9 @@ public class Grid<TGridObject>
             //lambda expression that changes the value of debug text array subscribed to the event
             if (showDebugText)
             {
-                OnGridObjectChanged += (object sender, OnGridObjectChangedEventArgs eventArgs) => {
-                    debugTextArray[eventArgs.x, eventArgs.y].text = gridArray[eventArgs.x,eventArgs.y]?.ToString();
+                OnGridObjectChanged += (object sender, OnGridObjectChangedEventArgs eventArgs) =>
+                {
+                    debugTextArray[eventArgs.x, eventArgs.y].text = gridArray[eventArgs.x, eventArgs.y]?.ToString();
                 };
             }
         }
@@ -98,6 +99,11 @@ public class Grid<TGridObject>
         x = Mathf.FloorToInt((worldPosition - originPosition).x / cellSize);
         y = Mathf.FloorToInt((worldPosition - originPosition).y / cellSize);
     }
+    public void GetXYtoWorldPosition(ref float x, ref float y)
+    {
+        x = x * cellSize + originPosition.x;
+        y = y * cellSize + originPosition.y;
+    }
     public void SetGridObject(Vector3 worldPosition, TGridObject value)
     {
         int x, y;
@@ -120,7 +126,7 @@ public class Grid<TGridObject>
     {
         OnGridObjectChanged?.Invoke(this, new OnGridObjectChangedEventArgs { x = x, y = y });
     }
-    
+
     public void TriggerGridObjectChanged()
     {
         OnGridObjectChanged?.Invoke(this, new OnGridObjectChangedEventArgs { });
