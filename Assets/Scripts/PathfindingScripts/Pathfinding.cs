@@ -127,10 +127,12 @@ public class Pathfinding
     {
         List<Vector3> vec3Path = new List<Vector3>();
         float gridCellSize = grid.GetCellSize();
+        
         foreach (PathNode node in path)
         {
             vec3Path.Add(new Vector3(node.x * gridCellSize, node.y * gridCellSize));
         }
+        
         return vec3Path;
     }
 

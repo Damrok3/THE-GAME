@@ -26,7 +26,7 @@ public class Grid<TGridObject>
     private TextMesh[,] debugTextArray;
 
     private int debugTextSize = 10;
-    bool showDebugGrid = true;
+    bool showDebugGrid = false;
     bool showDebugText = false;
 
     public Grid(int width, int height, float cellSize, Vector3 originPosition, Func<Grid<TGridObject>, int, int, TGridObject> createGridObject)

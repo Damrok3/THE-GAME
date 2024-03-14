@@ -6,10 +6,11 @@ public class Testing : MonoBehaviour
 {
     [SerializeField] private GameObject player; 
     [SerializeField] private HeatMapGenericVisual heatMap;
+    public static float enemySpeed = 40;
     private GameObject [] wallList;
 
-    private Pathfinding pathfinding;
-    private float cellSize = 5f;
+    public static Pathfinding pathfinding;
+    public static float cellSize = 5f;
     private void Start()
     {
         pathfinding = new Pathfinding(160, 100, cellSize);
