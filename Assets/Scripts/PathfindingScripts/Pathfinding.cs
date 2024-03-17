@@ -28,6 +28,8 @@ public class Pathfinding
         PathNode startNode = grid.GetGridObject(startX, startY);
         PathNode endNode = grid.GetGridObject(endX, endY);
 
+        if (!endNode.isWalkable) { return null; }
+
         openList = new List<PathNode>() { startNode };
         closedList = new List<PathNode>();
 
@@ -104,36 +106,28 @@ public class Pathfinding
                         node.isWalkable = false;
                     }
                     //bottom right
-                    if(MyFunctions.IsInsideCollider(c, gridNodePosition + new Vector3(grid.GetCellSize(), 0)))
+                    else if(MyFunctions.IsInsideCollider(c, gridNodePosition + new Vector3(grid.GetCellSize(), 0)))
                     {
                         node.isWalkable = false;
                     }
                     //upper left
-                    if(MyFunctions.IsInsideCollider(c, gridNodePosition + new Vector3(0, grid.GetCellSize())))
+                    else if(MyFunctions.IsInsideCollider(c, gridNodePosition + new Vector3(0, grid.GetCellSize())))
                     {
                         node.isWalkable = false;
                     }
                     //upper right
-                    if(MyFunctions.IsInsideCollider(c, gridNodePosition + new Vector3(grid.GetCellSize(), grid.GetCellSize())))
+                    else if(MyFunctions.IsInsideCollider(c, gridNodePosition + new Vector3(grid.GetCellSize(), grid.GetCellSize())))
                     {
                         node.isWalkable = false;
                     }
                 }
             }
-        }
-        
+        }      
     }
-    public List<Vector3> GetPathVector3List(List<PathNode> path)
+    public Vector3 NodeToVector3(PathNode node)
     {
-        List<Vector3> vec3Path = new List<Vector3>();
         float gridCellSize = grid.GetCellSize();
-        
-        foreach (PathNode node in path)
-        {
-            vec3Path.Add(new Vector3(node.x * gridCellSize, node.y * gridCellSize));
-        }
-        
-        return vec3Path;
+        return new Vector3(node.x * gridCellSize, node.y * gridCellSize);
     }
 
     private List<PathNode> GetNeighbourList(PathNode currentNode)

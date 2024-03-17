@@ -28,8 +28,6 @@ public class Testing : MonoBehaviour
             pathfinding.GetGrid().GetXY(mouseWorldPosition, out int x, out int y);
             pathfinding.GetGrid().GetXY(player.transform.position, out int Px, out int Py);
             List<PathNode> path = pathfinding.FindPath(Px, Py, x, y);
-            // vvvv this will be usefull with connecting path to enemy movement
-            List<Vector3> vec3Path = pathfinding.GetPathVector3List(path);
             if (path != null)
             {
                 for (int i = 0; i < path.Count - 1; i++)
