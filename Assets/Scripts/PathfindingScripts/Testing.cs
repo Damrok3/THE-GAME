@@ -7,18 +7,18 @@ public class Testing : MonoBehaviour
     [SerializeField] private GameObject player; 
     [SerializeField] private HeatMapGenericVisual heatMap;
     public static float enemySpeed = 40;
-    private GameObject [] boundaryList;
+    private GameObject [] noPathZoneList;
 
     public static Pathfinding pathfinding;
     public static float cellSize = 5f;
-    public static Vector3 playerClosestPathPosition;
+    public static Vector3 playerClosestPathNodePosition;
     public static bool isPlayerOnThePath = true;
 
     private void Start()
     {
         pathfinding = new Pathfinding(160, 100, cellSize);
-        boundaryList = GameObject.FindGameObjectsWithTag("boundary");
-        pathfinding.InitializePathBoundaries(boundaryList);
+        noPathZoneList = GameObject.FindGameObjectsWithTag("nopathzone");
+        pathfinding.InitializePathBoundaries(noPathZoneList);
         heatMap.SetGrid(pathfinding.GetGrid());
         pathfinding.GetGrid().TriggerGridObjectChanged();
     }
@@ -56,24 +56,18 @@ public class Testing : MonoBehaviour
             pathfinding.GetGrid().TriggerGridObjectChanged();
         }
     }
-    private Vector3 CheckIfPlayerOnPath()
+    private void CheckIfPlayerOnPath()
     {
-        foreach (GameObject boundary in boundaryList)
+
+        if(pathfinding.GetGrid().GetGridObject(player.transform.position).isWalkable == false) 
         {
-            if (MyFunctions.IsInsideCollider(boundary.GetComponent<BoxCollider2D>(), player.transform.position))
-            {
-                isPlayerOnThePath = false;
-                playerClosestPathPosition = boundary.GetComponent<BoxCollider2D>().bounds.ClosestPoint(player.transform.position);
-                Vector3 awayFromColliderCenter = (playerClosestPathPosition - boundary.transform.position).normalized;
-                while(!pathfinding.GetGrid().GetGridObject(playerClosestPathPosition).isWalkable)
-                {
-                    playerClosestPathPosition += awayFromColliderCenter;
-                }
-                return playerClosestPathPosition;
-            }
+            isPlayerOnThePath = false;
+            playerClosestPathNodePosition = pathfinding.getNearestWalkableNodePosition(player);
         }
-        isPlayerOnThePath = true;
-        return Vector3.zero;
+        else
+        {
+            isPlayerOnThePath = true;
+        }
     }
     private Vector2 GetMouseWorldPosition()
     {

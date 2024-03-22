@@ -10,3 +10,4 @@ public class MyFunctions
         return closest == point;
     }
 }
+

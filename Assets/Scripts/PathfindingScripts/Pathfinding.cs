@@ -127,6 +127,33 @@ public class Pathfinding
             }
         }      
     }
+    public Vector3 getNearestWalkableNodePosition(GameObject gameObject)
+    {
+        float smallestNoPathZoneList = float.MaxValue;
+        GameObject nearestNoPathZone = null;
+        GameObject[] noPathZoneList = GameObject.FindGameObjectsWithTag("nopathzone");
+
+        foreach (GameObject noPathZone in noPathZoneList)
+        {
+            if ((gameObject.transform.position - noPathZone.transform.position).magnitude < smallestNoPathZoneList)
+            {
+                smallestNoPathZoneList = (gameObject.transform.position - noPathZone.transform.position).magnitude;
+                nearestNoPathZone = noPathZone;
+            }
+        }
+        if (nearestNoPathZone != null)
+        {
+            Vector3 nearestWalkableNodePosition = nearestNoPathZone.GetComponent<BoxCollider2D>().bounds.ClosestPoint(gameObject.transform.position);
+            Vector3 awayFromColliderCenter = (nearestWalkableNodePosition - nearestNoPathZone.transform.position).normalized;
+            while (!GetGrid().GetGridObject(nearestWalkableNodePosition).isWalkable)
+            {
+                nearestWalkableNodePosition += awayFromColliderCenter;
+            }
+            return nearestWalkableNodePosition;
+        }
+        return Vector3.zero;
+    }
+
     public Vector3 NodeToVector3(PathNode node)
     {
         float gridCellSize = grid.GetCellSize();

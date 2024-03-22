@@ -6,7 +6,7 @@ TagManager:
   tags:
   - wall
   - enemy
-  - boundary
+  - nopathzone
   layers:
   - Default
   - TransparentFX

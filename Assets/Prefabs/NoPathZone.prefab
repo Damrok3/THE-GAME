@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 545712357977620648}
   - component: {fileID: -128436087071782780}
   m_Layer: 2
-  m_Name: boundary
-  m_TagString: boundary
+  m_Name: NoPathZone
+  m_TagString: nopathzone
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -85,7 +85,7 @@ SpriteRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4703682922933032240}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
