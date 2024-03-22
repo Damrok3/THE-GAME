@@ -138,6 +138,7 @@ public class Grid<TGridObject>
     //    SetValue(x, y, GetValue(x, y) + value);
     //}
 
+    // returns grid object after passing position in X, Y
     public TGridObject GetGridObject(int x, int y)
     {
         if (x >= 0 && y >= 0 && x < width && y < height)
@@ -149,6 +150,7 @@ public class Grid<TGridObject>
             return default(TGridObject);
         }
     }
+    // returns grid object after passing Vector3 with position
     public TGridObject GetGridObject(Vector3 worldPosition)
     {
         int x, y;

@@ -86,24 +86,27 @@ public class Pathfinding
         return null;
     }
 
-    public void InitializeWalls(GameObject [] wallArray)
+    public void InitializePathBoundaries(GameObject [] boundaryArray)
     {
         for (int x = 0; x < grid.GetWidth(); x++)
         {
             for(int y = 0; y < grid.GetHeight(); y ++)
             {
                 PathNode node = grid.GetGridObject(x, y);
+                
+
                 float xPos = node.x;
                 float yPos = node.y;
                 grid.GetXYtoWorldPosition(ref xPos, ref yPos);
                 Vector3 gridNodePosition = new Vector3(xPos, yPos);
-                foreach (GameObject wall in wallArray)
+                foreach (GameObject boundary in boundaryArray)
                 {
-                    BoxCollider2D c = wall.GetComponent<BoxCollider2D>();
+                    BoxCollider2D c = boundary.GetComponent<BoxCollider2D>();
+
                     //node bottom left corner
                     if(MyFunctions.IsInsideCollider(c, gridNodePosition))
                     {
-                        node.isWalkable = false;
+                        node.isWalkable = false;                     
                     }
                     //bottom right
                     else if(MyFunctions.IsInsideCollider(c, gridNodePosition + new Vector3(grid.GetCellSize(), 0)))

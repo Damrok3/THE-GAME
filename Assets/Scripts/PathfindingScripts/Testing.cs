@@ -7,21 +7,29 @@ public class Testing : MonoBehaviour
     [SerializeField] private GameObject player; 
     [SerializeField] private HeatMapGenericVisual heatMap;
     public static float enemySpeed = 40;
-    private GameObject [] wallList;
+    private GameObject [] boundaryList;
 
     public static Pathfinding pathfinding;
     public static float cellSize = 5f;
+    public static Vector3 playerClosestPathPosition;
+    public static bool isPlayerOnThePath = true;
+
     private void Start()
     {
         pathfinding = new Pathfinding(160, 100, cellSize);
+        boundaryList = GameObject.FindGameObjectsWithTag("boundary");
+        pathfinding.InitializePathBoundaries(boundaryList);
         heatMap.SetGrid(pathfinding.GetGrid());
-        wallList = GameObject.FindGameObjectsWithTag("wall");
-        pathfinding.InitializeWalls(wallList);
         pathfinding.GetGrid().TriggerGridObjectChanged();
     }
     private void Update()
     {
+        HandleInput();
+        CheckIfPlayerOnPath();       
+    }
 
+    private void HandleInput()
+    {
         if (Input.GetMouseButton(0))
         {
             Vector3 mouseWorldPosition = GetMouseWorldPosition();
@@ -39,7 +47,7 @@ public class Testing : MonoBehaviour
                 }
             }
         }
-        if(Input.GetMouseButtonDown(1))
+        if (Input.GetMouseButtonDown(1))
         {
             Vector3 position = GetMouseWorldPosition();
             PathNode node = pathfinding.GetGrid().GetGridObject(position);
@@ -47,6 +55,25 @@ public class Testing : MonoBehaviour
             //pathfinding.GetGrid().GetXY(position, out int x, out int y);
             pathfinding.GetGrid().TriggerGridObjectChanged();
         }
+    }
+    private Vector3 CheckIfPlayerOnPath()
+    {
+        foreach (GameObject boundary in boundaryList)
+        {
+            if (MyFunctions.IsInsideCollider(boundary.GetComponent<BoxCollider2D>(), player.transform.position))
+            {
+                isPlayerOnThePath = false;
+                playerClosestPathPosition = boundary.GetComponent<BoxCollider2D>().bounds.ClosestPoint(player.transform.position);
+                Vector3 awayFromColliderCenter = (playerClosestPathPosition - boundary.transform.position).normalized;
+                while(!pathfinding.GetGrid().GetGridObject(playerClosestPathPosition).isWalkable)
+                {
+                    playerClosestPathPosition += awayFromColliderCenter;
+                }
+                return playerClosestPathPosition;
+            }
+        }
+        isPlayerOnThePath = true;
+        return Vector3.zero;
     }
     private Vector2 GetMouseWorldPosition()
     {

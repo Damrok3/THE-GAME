@@ -45,12 +45,16 @@ public class HeatMapGenericVisual : MonoBehaviour
                 PathNode gridObject = grid.GetGridObject(x, y);
                 float gridValue = gridObject.isWalkable ? 0f : 0.1f;
                 Vector2 gridValueUV = new Vector2(gridValue, 0f);
-                MeshUtils.AddToMeshArrays(vertices, uv, triangles, index, grid.GetWorldPosition(x, y) + quadSize * .5f, 0f, quadSize, gridValueUV, gridValueUV);
+                //if(!gridObject.isWalkable)
+                {
+                    MeshUtils.AddToMeshArrays(vertices, uv, triangles, index, grid.GetWorldPosition(x, y) + quadSize * .5f, 0f, quadSize, gridValueUV, gridValueUV);
+                }
             }
         }
         mesh.vertices = vertices;
         mesh.uv = uv;
         mesh.triangles = triangles;
+        mesh.RecalculateBounds();
     }
 
     public static void CreateEmptyMeshArrays(int quadCount, out Vector3[] vertices, out Vector2[] uvs, out int[] triangles)
