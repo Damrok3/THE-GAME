@@ -69,7 +69,7 @@ public class EnemyController : MonoBehaviour
         {
             direction = (player.transform.position - transform.position);
         }
-        else if (path != null)
+        else if (path != null && path.Count >= 2)
         {
             Vector3 vec3Node = Testing.pathfinding.NodeToVector3(path[1]);
             direction = (vec3Node - transform.position) + new Vector3(Testing.cellSize / 2, Testing.cellSize / 2, 0f);
@@ -100,6 +100,10 @@ public class EnemyController : MonoBehaviour
     }
     private void ClearTraversedPath()
     {
+        if(path != null && path.Count < 2)
+        {
+            path = null;
+        }
         if (path != null && (Testing.pathfinding.NodeToVector3(path[1]) - transform.position).magnitude < 3.6f)
         {
             path.Remove(path[0]);

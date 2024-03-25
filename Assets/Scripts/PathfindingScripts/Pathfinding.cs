@@ -129,29 +129,67 @@ public class Pathfinding
     }
     public Vector3 getNearestWalkableNodePosition(GameObject gameObject)
     {
-        float smallestNoPathZoneList = float.MaxValue;
+        float smallestNoPathZoneDist = float.MaxValue;
+        Vector3 objPos = gameObject.transform.position;
         GameObject nearestNoPathZone = null;
         GameObject[] noPathZoneList = GameObject.FindGameObjectsWithTag("nopathzone");
 
         foreach (GameObject noPathZone in noPathZoneList)
         {
-            if ((gameObject.transform.position - noPathZone.transform.position).magnitude < smallestNoPathZoneList)
+            if ((objPos - noPathZone.GetComponent<BoxCollider2D>().bounds.ClosestPoint(objPos)).magnitude < smallestNoPathZoneDist)
             {
-                smallestNoPathZoneList = (gameObject.transform.position - noPathZone.transform.position).magnitude;
+                smallestNoPathZoneDist = (objPos - noPathZone.GetComponent<BoxCollider2D>().bounds.ClosestPoint(objPos)).magnitude;
                 nearestNoPathZone = noPathZone;
             }
         }
         if (nearestNoPathZone != null)
         {
-            Vector3 nearestWalkableNodePosition = nearestNoPathZone.GetComponent<BoxCollider2D>().bounds.ClosestPoint(gameObject.transform.position);
-            Vector3 awayFromColliderCenter = (nearestWalkableNodePosition - nearestNoPathZone.transform.position).normalized;
-            while (!GetGrid().GetGridObject(nearestWalkableNodePosition).isWalkable)
+            Vector3 pointOnZoneSurface = nearestNoPathZone.GetComponent<BoxCollider2D>().bounds.ClosestPoint(objPos);
+            pointOnZoneSurface = new Vector3(pointOnZoneSurface.x, pointOnZoneSurface.y, 0);
+            Vector3 awayFromColliderCenter;
+            // if outside of collider, get the nearest point on the surface
+            if (pointOnZoneSurface != objPos)
             {
-                nearestWalkableNodePosition += awayFromColliderCenter;
+                awayFromColliderCenter = (objPos - pointOnZoneSurface).normalized;
             }
-            return nearestWalkableNodePosition;
+            // if inside calculate the position of the closest edge and use that to set the point on surface
+            else
+            {
+                Vector3 zonePos = nearestNoPathZone.transform.position;
+                float zoneSizeY = nearestNoPathZone.GetComponent<BoxCollider2D>().bounds.size.y;
+                float zoneSizeX = nearestNoPathZone.GetComponent<BoxCollider2D>().bounds.size.x;
+               
+                List<Vector3> edges = new List<Vector3>()
+                {
+                     new Vector3(objPos.x, zonePos.y + zoneSizeY / 2),
+                     new Vector3(objPos.x, zonePos.y - zoneSizeY / 2),
+                     new Vector3(zonePos.x - zoneSizeX / 2, objPos.y),
+                     new Vector3(zonePos.x + zoneSizeX / 2, objPos.y)
+                };
+                float surfaceDist = float.MaxValue;
+                foreach (Vector3 edge in edges)
+                {
+                    if((objPos - edge).magnitude < surfaceDist)
+                    {
+                        pointOnZoneSurface = edge;
+                        surfaceDist = (objPos - edge).magnitude;
+                    }
+                }
+                
+                awayFromColliderCenter = (pointOnZoneSurface - objPos).normalized;
+            }
+            Debug.DrawLine(objPos, pointOnZoneSurface, Color.blue);
+            while (!GetGrid().GetGridObject(objPos).isWalkable)
+            {
+                objPos += awayFromColliderCenter;
+            }
+            return objPos;
         }
-        return Vector3.zero;
+        else
+        {
+            return Vector3.zero;
+        }
+
     }
 
     public Vector3 NodeToVector3(PathNode node)
