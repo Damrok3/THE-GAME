@@ -17,7 +17,10 @@ public class EnemyController : MonoBehaviour
     private Vector3 playerDirection;
     private Vector3 direction;
     private bool canSeePlayer = false;
-    private Stopwatch pathCooldown = new Stopwatch();
+    private bool collidedWithWall = false;
+    private bool wallCollisionCooldown = false;
+    private bool isPathingAroundWall = false;
+    private Stopwatch timer = new Stopwatch();
 
     // Start is called before the first frame update
     void Start()
@@ -38,14 +41,20 @@ public class EnemyController : MonoBehaviour
         CheckIfCanSeePlayer();
         MoveTowardsPlayer();
         ClearTraversedPath();
-
+        if (timer.ElapsedMilliseconds > 1500)
+        {
+            wallCollisionCooldown = false;
+            timer.Stop();
+            timer.Reset();
+        }
     }
 
     private bool shouldFindPath()
     {
         if (path == null && !canSeePlayer) return true;
-        else if (!canSeePlayer && path.Count < 2) return true;
-        else return false;
+        if (!canSeePlayer && path.Count < 2) return true;
+        if (collidedWithWall) { collidedWithWall = false; return true; }
+        return false;
     }
 
     private void CheckIfCanSeePlayer()
@@ -53,7 +62,7 @@ public class EnemyController : MonoBehaviour
         playerDirection = (player.transform.position - transform.position).normalized;
         raycastHit = Physics2D.Raycast(transform.position, playerDirection);
 
-        if (raycastHit.collider.tag == "Player")
+        if (raycastHit.collider.tag == "Player" && !wallCollisionCooldown)
         {
             canSeePlayer = true;
             path = null;
@@ -109,6 +118,11 @@ public class EnemyController : MonoBehaviour
             path.Remove(path[0]);
             path.Remove(path[0]);
         }
+        else if ( path!= null && isPathingAroundWall)
+        {
+            path.Remove(path[0]);
+            isPathingAroundWall = false;
+        }
     }
     private List<PathNode> FindPath()
     {
@@ -135,5 +149,16 @@ public class EnemyController : MonoBehaviour
         }
         List<PathNode> path = Testing.pathfinding.FindPath(x, y, Px, Py);
         return path;
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if(collision.gameObject.CompareTag("wall") || collision.gameObject.CompareTag("enemy"))
+        {
+            collidedWithWall = true;
+            wallCollisionCooldown = true;
+            isPathingAroundWall = true;
+            timer.Start();
+        }
     }
 }
