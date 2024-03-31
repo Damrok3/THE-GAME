@@ -10,17 +10,26 @@ public class EnemyController : MonoBehaviour
 {
 
     private GameObject player;
+
     private Rigidbody2D rb;
+
     private Grid<PathNode> grid;
+
     private List<PathNode> path;
+
     private RaycastHit2D raycastHit;
+
     private Vector3 playerDirection;
     private Vector3 direction;
+
     private bool canSeePlayer = false;
     private bool collidedWithWall = false;
     private bool wallCollisionCooldown = false;
     private bool isPathingAroundWall = false;
-    private Stopwatch timer = new Stopwatch();
+
+    private Stopwatch stuckAtEachOtherTimer = new Stopwatch();
+    private Stopwatch enemyCollisionCooldown = new Stopwatch();
+    private Stopwatch pathingAroundWallTimer = new Stopwatch();
 
     // Start is called before the first frame update
     void Start()
@@ -40,12 +49,28 @@ public class EnemyController : MonoBehaviour
         DebugPath();
         CheckIfCanSeePlayer();
         MoveTowardsPlayer();
+        ManageCollissions();
         ClearTraversedPath();
-        if (timer.ElapsedMilliseconds > 1500)
+    }
+
+    private void ManageCollissions()
+    {
+        if (pathingAroundWallTimer.ElapsedMilliseconds > 1500)
         {
             wallCollisionCooldown = false;
-            timer.Stop();
-            timer.Reset();
+            pathingAroundWallTimer.Stop();
+            pathingAroundWallTimer.Reset();
+        }
+        if (stuckAtEachOtherTimer.ElapsedMilliseconds > 1000)
+        {
+            enemyCollisionCooldown.Start();
+            gameObject.GetComponent<CircleCollider2D>().enabled = false;         
+        }
+        if (enemyCollisionCooldown.ElapsedMilliseconds > 1000)
+        {
+            enemyCollisionCooldown.Stop();
+            enemyCollisionCooldown.Reset();
+            gameObject.GetComponent<CircleCollider2D>().enabled = true;     
         }
     }
 
@@ -153,12 +178,25 @@ public class EnemyController : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if(collision.gameObject.CompareTag("wall") || collision.gameObject.CompareTag("enemy"))
+        if(collision.gameObject.CompareTag("wall"))
         {
             collidedWithWall = true;
             wallCollisionCooldown = true;
             isPathingAroundWall = true;
-            timer.Start();
+            pathingAroundWallTimer.Start();
+        }
+        if (collision.gameObject.CompareTag("enemy"))
+        {
+            stuckAtEachOtherTimer.Start();
+        }
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("enemy"))
+        {
+            stuckAtEachOtherTimer.Stop();
+            stuckAtEachOtherTimer.Reset();
         }
     }
 }
