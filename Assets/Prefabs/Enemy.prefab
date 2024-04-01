@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 1401341443760679926}
   - component: {fileID: 6227074804952896761}
   - component: {fileID: 4568713441377196500}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Enemy
   m_TagString: enemy
   m_Icon: {fileID: 0}
@@ -112,9 +112,9 @@ MonoBehaviour:
   - {x: -0.5, y: 0.5, z: 0}
   - {x: 0.5, y: 0.5, z: 0}
   - {x: 0.5, y: -0.5, z: 0}
-  m_ShapePathHash: 0
+  m_ShapePathHash: 160822549
   m_Mesh: {fileID: 0}
-  m_InstanceId: -1304
+  m_InstanceId: 30408
   m_LocalBounds:
     m_Center: {x: 0, y: 0, z: 0}
     m_Extent: {x: 0.5, y: 0.5, z: 0}
@@ -157,6 +157,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 004e6288b32b19c4cb19fdaf0ad02b96, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isSeenByPlayer: 0
 --- !u!58 &4568713441377196500
 CircleCollider2D:
   m_ObjectHideFlags: 0

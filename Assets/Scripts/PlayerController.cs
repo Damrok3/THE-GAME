@@ -17,12 +17,22 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void LateUpdate()
     {
-        transform.rotation = Quaternion.Euler(new Vector3(0,0,GetPlayerAngle() - 90));
+        ManagePlayerLookDirection();
+        ManagePlayerMovement();
+    }
+
+    private void ManagePlayerMovement()
+    {
         float hAxis = Input.GetAxis("Horizontal");
         float vAxis = Input.GetAxis("Vertical");
         Vector2 vVector = Vector2.up * vAxis;
         Vector2 hVector = Vector2.right * hAxis;
-        rb.AddForce( (vVector + hVector).normalized * speed, ForceMode2D.Force);
+        rb.AddForce((vVector + hVector).normalized * speed, ForceMode2D.Force);
+    }
+
+    private void ManagePlayerLookDirection()
+    {
+        transform.rotation = Quaternion.Euler(new Vector3(0, 0, GetPlayerAngle() - 90));
     }
 
     private float GetPlayerAngle()

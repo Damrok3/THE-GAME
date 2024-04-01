@@ -31,6 +31,8 @@ public class EnemyController : MonoBehaviour
     private Stopwatch enemyCollisionCooldown = new Stopwatch();
     private Stopwatch pathingAroundWallTimer = new Stopwatch();
 
+    public bool isSeenByPlayer = false;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -113,9 +115,9 @@ public class EnemyController : MonoBehaviour
             direction = Vector3.zero;
         }
 
-        UnityEngine.Debug.DrawLine(transform.position, transform.position + direction, Color.red);
+        //UnityEngine.Debug.DrawLine(transform.position, transform.position + direction, Color.red);
 
-        if (direction != Vector3.zero)
+        if (direction != Vector3.zero && !isSeenByPlayer)
         {
             rb.AddForce(direction.normalized * Testing.enemySpeed, ForceMode2D.Force);
         }
@@ -170,7 +172,7 @@ public class EnemyController : MonoBehaviour
         }
         else
         {
-            grid.GetXY(transform.position, out x, out y);
+            grid.GetXY(transform.position, out x, out y); 
         }
         List<PathNode> path = Testing.pathfinding.FindPath(x, y, Px, Py);
         return path;
