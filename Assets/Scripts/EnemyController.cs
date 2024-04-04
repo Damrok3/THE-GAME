@@ -40,23 +40,31 @@ public class EnemyController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
+    private void FixedUpdate()
+    {
+        CheckIfCanSeePlayer();
+    }
+
     // Update is called once per frame
     void Update()
     {
-
+        
         if (shouldFindPath())
         {
             path = FindPath();
         }
         DebugPath();
-        CheckIfCanSeePlayer();
         MoveTowardsPlayer();
         ManageCollissions();
         ClearTraversedPath();
+        
+
     }
 
     private void ManageCollissions()
     {
+        int layerIgnoreCollision = LayerMask.NameToLayer("ignore collision");
+        int layerDefault = LayerMask.NameToLayer("Default");
         if (pathingAroundWallTimer.ElapsedMilliseconds > 1500)
         {
             wallCollisionCooldown = false;
@@ -66,13 +74,13 @@ public class EnemyController : MonoBehaviour
         if (stuckAtEachOtherTimer.ElapsedMilliseconds > 1000)
         {
             enemyCollisionCooldown.Start();
-            gameObject.GetComponent<CircleCollider2D>().enabled = false;         
+            gameObject.layer = layerIgnoreCollision;        
         }
         if (enemyCollisionCooldown.ElapsedMilliseconds > 1000)
         {
             enemyCollisionCooldown.Stop();
             enemyCollisionCooldown.Reset();
-            gameObject.GetComponent<CircleCollider2D>().enabled = true;     
+            gameObject.layer = layerDefault;
         }
     }
 
@@ -119,8 +127,15 @@ public class EnemyController : MonoBehaviour
 
         if (direction != Vector3.zero && !isSeenByPlayer)
         {
+            
             rb.AddForce(direction.normalized * Testing.enemySpeed, ForceMode2D.Force);
         }
+        else if(isSeenByPlayer)
+        {
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = 0f;           
+        }
+        
     }
     private void DebugPath()
     {
@@ -178,18 +193,25 @@ public class EnemyController : MonoBehaviour
         return path;
     }
 
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("enemy"))
+        {
+            if (!stuckAtEachOtherTimer.IsRunning)
+            {
+                stuckAtEachOtherTimer.Start();
+            }
+        }
+    }
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if(collision.gameObject.CompareTag("wall"))
+        if (collision.gameObject.CompareTag("wall"))
         {
             collidedWithWall = true;
             wallCollisionCooldown = true;
             isPathingAroundWall = true;
             pathingAroundWallTimer.Start();
-        }
-        if (collision.gameObject.CompareTag("enemy"))
-        {
-            stuckAtEachOtherTimer.Start();
         }
     }
 

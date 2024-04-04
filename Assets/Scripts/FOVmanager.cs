@@ -7,14 +7,14 @@ public class FOVmanager : MonoBehaviour
     public float fovAngle = 90f;
 
     public Transform fovPoint;
-    public List<GameObject> target;
+    public List<GameObject> targets;
 
     public float range = 8f;
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        foreach (GameObject t in target)
+        foreach (GameObject t in targets)
         {
             Vector2 dir = t.transform.position - fovPoint.position;
             float angle = Vector3.Angle(dir, fovPoint.up);
@@ -26,10 +26,12 @@ public class FOVmanager : MonoBehaviour
                 {
                     if (hit.collider.gameObject.CompareTag("enemy"))
                     {
-                        Debug.DrawRay(transform.position, dir, Color.cyan);
                         t.GetComponent<EnemyController>().isSeenByPlayer = true;
-                    }       
-
+                    }
+                    else
+                    {
+                        t.GetComponent<EnemyController>().isSeenByPlayer = false;
+                    }
                 } 
             }
             else
