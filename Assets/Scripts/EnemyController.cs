@@ -10,6 +10,8 @@ public class EnemyController : MonoBehaviour
 {
 
     private GameObject player;
+    private EnemyController collidedEnemyThatIsStopped = null;
+    private EnemyController collidedEnemyThatIsSeen = null;
 
     private Rigidbody2D rb;
 
@@ -32,6 +34,7 @@ public class EnemyController : MonoBehaviour
     private Stopwatch pathingAroundWallTimer = new Stopwatch();
 
     public bool isSeenByPlayer = false;
+    public bool shouldStop = false;
 
     // Start is called before the first frame update
     void Start()
@@ -57,7 +60,22 @@ public class EnemyController : MonoBehaviour
         MoveTowardsPlayer();
         ManageCollissions();
         ClearTraversedPath();
+
         
+
+        // fov debugging
+        //if (isSeenByPlayer)
+        //{
+        //    gameObject.GetComponent<SpriteRenderer>().color = Color.blue;
+        //}
+        //if (!isSeenByPlayer && shouldStop)
+        //{
+        //    gameObject.GetComponent<SpriteRenderer>().color = Color.red;
+        //}
+        //if(!isSeenByPlayer && !shouldStop)
+        //{
+        //    gameObject.GetComponent<SpriteRenderer>().color = Color.white;
+        //}
 
     }
 
@@ -71,16 +89,26 @@ public class EnemyController : MonoBehaviour
             pathingAroundWallTimer.Stop();
             pathingAroundWallTimer.Reset();
         }
-        if (stuckAtEachOtherTimer.ElapsedMilliseconds > 1000)
+        if (stuckAtEachOtherTimer.ElapsedMilliseconds > 500)
         {
             enemyCollisionCooldown.Start();
             gameObject.layer = layerIgnoreCollision;        
         }
-        if (enemyCollisionCooldown.ElapsedMilliseconds > 1000)
+        if (enemyCollisionCooldown.ElapsedMilliseconds > 500)
         {
             enemyCollisionCooldown.Stop();
             enemyCollisionCooldown.Reset();
             gameObject.layer = layerDefault;
+        }
+        if (collidedEnemyThatIsSeen != null && shouldStop && !collidedEnemyThatIsSeen.isSeenByPlayer)
+        {
+            shouldStop = false;
+            collidedEnemyThatIsSeen = null;
+        }
+        if (collidedEnemyThatIsStopped != null && shouldStop && !collidedEnemyThatIsStopped.shouldStop)
+        {
+            shouldStop = false;
+            collidedEnemyThatIsStopped = null;
         }
     }
 
@@ -125,15 +153,16 @@ public class EnemyController : MonoBehaviour
 
         //UnityEngine.Debug.DrawLine(transform.position, transform.position + direction, Color.red);
 
-        if (direction != Vector3.zero && !isSeenByPlayer)
+        if (direction != Vector3.zero && !isSeenByPlayer && !shouldStop)
         {
-            
+            rb.mass = 1f;
             rb.AddForce(direction.normalized * Testing.enemySpeed, ForceMode2D.Force);
         }
-        else if(isSeenByPlayer)
+        else if(isSeenByPlayer || shouldStop)
         {
             rb.velocity = Vector3.zero;
-            rb.angularVelocity = 0f;           
+            rb.angularVelocity = 0f;
+            rb.mass = 1000f;
         }
         
     }
@@ -197,7 +226,21 @@ public class EnemyController : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("enemy"))
         {
-            if (!stuckAtEachOtherTimer.IsRunning)
+            EnemyController collisionObj = collision.gameObject.GetComponent<EnemyController>();
+
+            // if not seen by player and collided enemy is seen, then stop moving
+            if (!isSeenByPlayer && collisionObj.isSeenByPlayer)
+            {
+                collidedEnemyThatIsSeen = collisionObj;
+                shouldStop = true;
+            }
+            // if not seen by player and not stopped and collided enemy is stopped, then stop moving
+            if (!isSeenByPlayer && !shouldStop && collisionObj.shouldStop)
+            {
+                collidedEnemyThatIsStopped = collisionObj;
+                shouldStop = true;
+            }
+            if (!stuckAtEachOtherTimer.IsRunning && !isSeenByPlayer && !shouldStop && !collisionObj.isSeenByPlayer && !collisionObj.shouldStop)
             {
                 stuckAtEachOtherTimer.Start();
             }
