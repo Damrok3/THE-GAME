@@ -1,17 +1,26 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    private Rigidbody2D rb;
     public float speed = 1;
+    public List<AudioClip> clips;
+    private AudioSource audio;
+    private Animator anim;
+    private Rigidbody2D rb;
+    private Stopwatch audioDelay = new Stopwatch();
 
     // Start is called before the first frame update
     void Start()
     {
+        
         rb = GetComponent<Rigidbody2D>();  
+        anim = GetComponent<Animator>();
+        audio = GetComponent<AudioSource>();
+        audioDelay.Start();
     }
 
     // Update is called once per frame
@@ -23,13 +32,27 @@ public class PlayerController : MonoBehaviour
 
     private void ManagePlayerMovement()
     {
+        
         float hAxis = Input.GetAxis("Horizontal");
         float vAxis = Input.GetAxis("Vertical");
-        Vector2 vVector = Vector2.up * vAxis;
-        Vector2 hVector = Vector2.right * hAxis;
-        rb.AddForce((vVector + hVector).normalized * speed, ForceMode2D.Force);
+        if(hAxis != 0 || vAxis != 0)
+        {
+            if(audioDelay.ElapsedMilliseconds > 750)
+            {
+                audio.PlayOneShot(clips[Random.Range(0, clips.Count)]);
+                audioDelay.Restart();
+            }
+            anim.SetBool("isWalking", true);
+            Vector2 vVector = Vector2.up * vAxis;
+            Vector2 hVector = Vector2.right * hAxis;
+            rb.AddForce((vVector + hVector).normalized * speed, ForceMode2D.Force);
+        }
+        else
+        {
+            anim.SetBool("isWalking", false);
+        }
+        
     }
-
     private void ManagePlayerLookDirection()
     {
         transform.rotation = Quaternion.Euler(new Vector3(0, 0, GetPlayerAngle() - 90));

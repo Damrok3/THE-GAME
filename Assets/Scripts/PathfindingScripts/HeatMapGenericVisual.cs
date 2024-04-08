@@ -21,13 +21,14 @@ public class HeatMapGenericVisual : MonoBehaviour
     public void SetGrid(Grid<PathNode> grid)
     {
         this.grid = grid;
+        
         UpdateHeatMapVisual();
-
+        
         grid.OnGridObjectChanged += Grid_OnGridValueChanged;
     }
     private void LateUpdate()
     {
-        if (updateMesh)
+        if (updateMesh && mesh != null)
         {
             updateMesh = false;
             UpdateHeatMapVisual();
@@ -35,26 +36,30 @@ public class HeatMapGenericVisual : MonoBehaviour
     }
     private void UpdateHeatMapVisual()
     {
-        CreateEmptyMeshArrays(grid.GetWidth() * grid.GetHeight(), out Vector3[] vertices, out Vector2[] uv, out int[] triangles);
-        for (int x = 0; x < grid.GetWidth(); x++)
+        if(mesh != null)
         {
-            for (int y = 0; y < grid.GetHeight(); y++)
+
+            CreateEmptyMeshArrays(grid.GetWidth() * grid.GetHeight(), out Vector3[] vertices, out Vector2[] uv, out int[] triangles);
+            for (int x = 0; x < grid.GetWidth(); x++)
             {
-                int index = x * grid.GetHeight() + y;
-                Vector3 quadSize = new Vector3(1, 1) * grid.GetCellSize();
-                PathNode gridObject = grid.GetGridObject(x, y);
-                float gridValue = gridObject.isWalkable ? 0f : 0.1f;
-                Vector2 gridValueUV = new Vector2(gridValue, 0f);
-                //if(!gridObject.isWalkable)
+                for (int y = 0; y < grid.GetHeight(); y++)
                 {
-                    MeshUtils.AddToMeshArrays(vertices, uv, triangles, index, grid.GetWorldPosition(x, y) + quadSize * .5f, 0f, quadSize, gridValueUV, gridValueUV);
+                    int index = x * grid.GetHeight() + y;
+                    Vector3 quadSize = new Vector3(1, 1) * grid.GetCellSize();
+                    PathNode gridObject = grid.GetGridObject(x, y);
+                    float gridValue = gridObject.isWalkable ? 0f : 0.1f;
+                    Vector2 gridValueUV = new Vector2(gridValue, 0f);
+                    //if(!gridObject.isWalkable)
+                    {
+                        MeshUtils.AddToMeshArrays(vertices, uv, triangles, index, grid.GetWorldPosition(x, y) + quadSize * .5f, 0f, quadSize, gridValueUV, gridValueUV);
+                    }
                 }
             }
+            mesh.vertices = vertices;
+            mesh.uv = uv;
+            mesh.triangles = triangles;
+            mesh.RecalculateBounds();
         }
-        mesh.vertices = vertices;
-        mesh.uv = uv;
-        mesh.triangles = triangles;
-        mesh.RecalculateBounds();
     }
 
     public static void CreateEmptyMeshArrays(int quadCount, out Vector3[] vertices, out Vector2[] uvs, out int[] triangles)

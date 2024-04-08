@@ -80,7 +80,7 @@ public class EnemyController : MonoBehaviour
     }
 
     private void ManageCollissions()
-    {
+    {   
         int layerIgnoreCollision = LayerMask.NameToLayer("ignore collision");
         int layerDefault = LayerMask.NameToLayer("Default");
         if (pathingAroundWallTimer.ElapsedMilliseconds > 1500)
