@@ -6,7 +6,6 @@ public class Testing : MonoBehaviour
 {
     [SerializeField] private GameObject player; 
     [SerializeField] private HeatMapGenericVisual heatMap;
-    public static float enemySpeed = 40;
     private GameObject [] noPathZoneList;
 
     public static Pathfinding pathfinding;
@@ -16,6 +15,7 @@ public class Testing : MonoBehaviour
 
     private void Start()
     {
+        //300 269
         pathfinding = new Pathfinding(160, 100, cellSize);
         noPathZoneList = GameObject.FindGameObjectsWithTag("nopathzone");
         pathfinding.InitializePathBoundaries(noPathZoneList);

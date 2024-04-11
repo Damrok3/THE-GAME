@@ -36,6 +36,8 @@ public class EnemyController : MonoBehaviour
     public bool isSeenByPlayer = false;
     public bool shouldStop = false;
 
+    public float enemySpeed;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -156,7 +158,7 @@ public class EnemyController : MonoBehaviour
         if (direction != Vector3.zero && !isSeenByPlayer && !shouldStop)
         {
             rb.mass = 1f;
-            rb.AddForce(direction.normalized * Testing.enemySpeed, ForceMode2D.Force);
+            rb.AddForce(direction.normalized * enemySpeed, ForceMode2D.Force);
         }
         else if(isSeenByPlayer || shouldStop)
         {

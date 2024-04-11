@@ -8,7 +8,7 @@ public class PlayerController : MonoBehaviour
 {
     public float speed = 1;
     public List<AudioClip> clips;
-    private AudioSource audio;
+    private AudioSource audioSrc;
     private Animator anim;
     private Rigidbody2D rb;
     private Stopwatch audioDelay = new Stopwatch();
@@ -19,14 +19,16 @@ public class PlayerController : MonoBehaviour
         
         rb = GetComponent<Rigidbody2D>();  
         anim = GetComponent<Animator>();
-        audio = GetComponent<AudioSource>();
+        audioSrc = GetComponent<AudioSource>();
         audioDelay.Start();
+        
     }
 
     // Update is called once per frame
     void LateUpdate()
     {
         ManagePlayerLookDirection();
+        
         ManagePlayerMovement();
     }
 
@@ -39,7 +41,7 @@ public class PlayerController : MonoBehaviour
         {
             if(audioDelay.ElapsedMilliseconds > 750)
             {
-                audio.PlayOneShot(clips[Random.Range(0, clips.Count)]);
+                audioSrc.PlayOneShot(clips[Random.Range(0, clips.Count)]);
                 audioDelay.Restart();
             }
             anim.SetBool("isWalking", true);
@@ -53,6 +55,8 @@ public class PlayerController : MonoBehaviour
         }
         
     }
+
+    
     private void ManagePlayerLookDirection()
     {
         transform.rotation = Quaternion.Euler(new Vector3(0, 0, GetPlayerAngle() - 90));
@@ -60,18 +64,12 @@ public class PlayerController : MonoBehaviour
 
     private float GetPlayerAngle()
     {
-        Vector2 mousePos = GetMouseWorldPosition();
+        Vector2 mousePos = MyFunctions.GetMouseWorldPosition();
         Vector2 playerPos = transform.position;
         Vector2 directionVec = mousePos - playerPos;
         float angleInRadians = Mathf.Atan2(directionVec.y, directionVec.x);
         return angleInRadians * Mathf.Rad2Deg;
     }
 
-    private Vector2 GetMouseWorldPosition()
-    {
-        Vector3 screenPosition = Input.mousePosition;
-        screenPosition.z = Camera.main.nearClipPlane + 1;
-        Vector2 position = Camera.main.ScreenToWorldPoint(screenPosition);
-        return position;
-    }
+ 
 }

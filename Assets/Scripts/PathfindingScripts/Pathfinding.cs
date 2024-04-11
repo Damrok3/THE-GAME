@@ -101,25 +101,23 @@ public class Pathfinding
                 Vector3 gridNodePosition = new Vector3(xPos, yPos);
                 foreach (GameObject boundary in boundaryArray)
                 {
-                    BoxCollider2D c = boundary.GetComponent<BoxCollider2D>();
-
                     //node bottom left corner
-                    if(MyFunctions.IsInsideCollider(c, gridNodePosition))
+                    if(MyFunctions.IsInsideCollider(boundary, gridNodePosition))
                     {
                         node.isWalkable = false;                     
                     }
                     //bottom right
-                    else if(MyFunctions.IsInsideCollider(c, gridNodePosition + new Vector3(grid.GetCellSize(), 0)))
+                    else if(MyFunctions.IsInsideCollider(boundary, gridNodePosition + new Vector3(grid.GetCellSize(), 0)))
                     {
                         node.isWalkable = false;
                     }
                     //upper left
-                    else if(MyFunctions.IsInsideCollider(c, gridNodePosition + new Vector3(0, grid.GetCellSize())))
+                    else if(MyFunctions.IsInsideCollider(boundary, gridNodePosition + new Vector3(0, grid.GetCellSize())))
                     {
                         node.isWalkable = false;
                     }
                     //upper right
-                    else if(MyFunctions.IsInsideCollider(c, gridNodePosition + new Vector3(grid.GetCellSize(), grid.GetCellSize())))
+                    else if(MyFunctions.IsInsideCollider(boundary, gridNodePosition + new Vector3(grid.GetCellSize(), grid.GetCellSize())))
                     {
                         node.isWalkable = false;
                     }
@@ -136,15 +134,34 @@ public class Pathfinding
 
         foreach (GameObject noPathZone in noPathZoneList)
         {
-            if ((objPos - noPathZone.GetComponent<BoxCollider2D>().bounds.ClosestPoint(objPos)).magnitude < smallestNoPathZoneDist)
+            Collider2D c = null;
+            if (noPathZone.GetComponent<BoxCollider2D>() != null)
             {
-                smallestNoPathZoneDist = (objPos - noPathZone.GetComponent<BoxCollider2D>().bounds.ClosestPoint(objPos)).magnitude;
+                c = noPathZone.GetComponent<BoxCollider2D>();
+            }
+            else
+            {
+                c = noPathZone.GetComponent<EdgeCollider2D>();
+            }
+            if ((objPos - c.bounds.ClosestPoint(objPos)).magnitude < smallestNoPathZoneDist)
+            {
+                smallestNoPathZoneDist = (objPos - c.bounds.ClosestPoint(objPos)).magnitude;
                 nearestNoPathZone = noPathZone;
             }
         }
         if (nearestNoPathZone != null)
         {
-            Vector3 pointOnZoneSurface = nearestNoPathZone.GetComponent<BoxCollider2D>().bounds.ClosestPoint(objPos);
+            Collider2D c = null;
+            if (nearestNoPathZone.GetComponent<BoxCollider2D>() != null)
+            {
+                c = nearestNoPathZone.GetComponent<BoxCollider2D>();
+            }
+            else
+            {
+                c = nearestNoPathZone.GetComponent<EdgeCollider2D>();
+            }
+
+            Vector3 pointOnZoneSurface = c.bounds.ClosestPoint(objPos);
             pointOnZoneSurface = new Vector3(pointOnZoneSurface.x, pointOnZoneSurface.y, 0);
             Vector3 awayFromColliderCenter;
             // if outside of collider, get the nearest point on the surface
@@ -156,8 +173,8 @@ public class Pathfinding
             else
             {
                 Vector3 zonePos = nearestNoPathZone.transform.position;
-                float zoneSizeY = nearestNoPathZone.GetComponent<BoxCollider2D>().bounds.size.y;
-                float zoneSizeX = nearestNoPathZone.GetComponent<BoxCollider2D>().bounds.size.x;
+                float zoneSizeY = c.bounds.size.y;
+                float zoneSizeX = c.bounds.size.x;
                
                 List<Vector3> edges = new List<Vector3>()
                 {
