@@ -158,7 +158,7 @@ public class EnemyController : MonoBehaviour
         if (direction != Vector3.zero && !isSeenByPlayer && !shouldStop)
         {
             rb.mass = 1f;
-            rb.AddForce(direction.normalized * enemySpeed, ForceMode2D.Force);
+            rb.AddForce(direction.normalized * enemySpeed * Time.deltaTime, ForceMode2D.Force);
         }
         else if(isSeenByPlayer || shouldStop)
         {

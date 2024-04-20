@@ -159,7 +159,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isSeenByPlayer: 0
   shouldStop: 0
-  enemySpeed: 20
+  enemySpeed: 10000
 --- !u!58 &4568713441377196500
 CircleCollider2D:
   m_ObjectHideFlags: 0

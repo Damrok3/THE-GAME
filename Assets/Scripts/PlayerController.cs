@@ -47,19 +47,23 @@ public class PlayerController : MonoBehaviour
             anim.SetBool("isWalking", true);
             Vector2 vVector = Vector2.up * vAxis;
             Vector2 hVector = Vector2.right * hAxis;
-            rb.AddForce((vVector + hVector).normalized * speed, ForceMode2D.Force);
+            rb.AddForce((vVector + hVector).normalized * speed * Time.deltaTime, ForceMode2D.Force);
+            //  optional movement model
+            //Vector3 vVector = Vector2.up * vAxis;
+            //Vector3 hVector = Vector2.right * hAxis;
+            //rb.AddForce((gameObject.transform.up * vAxis + hVector).normalized * speed, ForceMode2D.Force);
+
         }
         else
         {
             anim.SetBool("isWalking", false);
         }
-        
     }
 
-    
     private void ManagePlayerLookDirection()
     {
         transform.rotation = Quaternion.Euler(new Vector3(0, 0, GetPlayerAngle() - 90));
+        
     }
 
     private float GetPlayerAngle()

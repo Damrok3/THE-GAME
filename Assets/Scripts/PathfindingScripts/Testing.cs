@@ -16,7 +16,7 @@ public class Testing : MonoBehaviour
     private void Start()
     {
         //300 269
-        pathfinding = new Pathfinding(160, 100, cellSize);
+        pathfinding = new Pathfinding(300, 269, cellSize);
         noPathZoneList = GameObject.FindGameObjectsWithTag("nopathzone");
         pathfinding.InitializePathBoundaries(noPathZoneList);
         heatMap.SetGrid(pathfinding.GetGrid());
