@@ -7,6 +7,7 @@ TagManager:
   - wall
   - enemy
   - nopathzone
+  - door
   layers:
   - Default
   - TransparentFX
@@ -44,6 +45,6 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: test
+  - name: no_shadows
     uniqueID: 631495199
     locked: 0

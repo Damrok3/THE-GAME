@@ -18,7 +18,7 @@ public class DoorSound : MonoBehaviour
     private void OnCollisionStay2D(Collision2D collision)
     {
  
-        if(collision.gameObject.CompareTag("Player"))
+        if(collision.gameObject.CompareTag("Player") || collision.gameObject.CompareTag("enemy"))
         {
             if(!audioComponent.isPlaying && Mathf.Abs(rb.angularVelocity) > 20f)
             {

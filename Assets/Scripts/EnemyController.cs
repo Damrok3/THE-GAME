@@ -28,13 +28,22 @@ public class EnemyController : MonoBehaviour
     private bool collidedWithWall = false;
     private bool wallCollisionCooldown = false;
     private bool isPathingAroundWall = false;
+    private bool wentRight = false;
+    private bool wentDown= false;
+    private bool wentLeft = false;
+    private bool wentUp = false;
 
     private Stopwatch stuckAtEachOtherTimer = new Stopwatch();
+    private Stopwatch stuckAtDoorTimer = new Stopwatch();
+    private Stopwatch pathingAroundDoorTimer = new Stopwatch();
     private Stopwatch enemyCollisionCooldown = new Stopwatch();
     private Stopwatch pathingAroundWallTimer = new Stopwatch();
 
+    private Animator anim;
+
     public bool isSeenByPlayer = false;
     public bool shouldStop = false;
+    public bool shouldPathAroundDoor = false;
 
     public float enemySpeed;
 
@@ -43,6 +52,7 @@ public class EnemyController : MonoBehaviour
     {
         player = GameObject.Find("player");
         rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
     }
 
     private void FixedUpdate()
@@ -112,6 +122,29 @@ public class EnemyController : MonoBehaviour
             shouldStop = false;
             collidedEnemyThatIsStopped = null;
         }
+        if (stuckAtDoorTimer.ElapsedMilliseconds > 1500)
+        {
+            shouldPathAroundDoor = true;
+            pathingAroundDoorTimer.Start();
+        }
+        if(pathingAroundDoorTimer.ElapsedMilliseconds > 1500)
+        {
+            shouldPathAroundDoor = false;
+            path = null;
+            if (!wentRight) wentRight = true;
+            else if (!wentDown) wentDown = true;
+            else if (!wentLeft) wentLeft = true;
+            else if (!wentUp) wentUp = true;
+            else
+            {
+                wentRight = false;
+                wentDown = false;
+                wentLeft = false;
+                wentUp = false;
+            }
+            pathingAroundDoorTimer.Stop();
+            pathingAroundDoorTimer.Reset();
+        }
     }
 
     private bool shouldFindPath()
@@ -152,16 +185,37 @@ public class EnemyController : MonoBehaviour
         {
             direction = Vector3.zero;
         }
+        if(shouldPathAroundDoor)
+        {
+            if(!wentRight)
+            {
+                direction += Vector3.right * 10;
+            }
+            else if(!wentDown)
+            {
+                direction += Vector3.down * 10;
+            }
+            else if(!wentLeft)
+            {
+                direction += Vector3.left * 10;
+            }
+            else if (!wentUp)
+            {
+                direction += Vector3.up * 10;
+            }  
+        }
 
-        //UnityEngine.Debug.DrawLine(transform.position, transform.position + direction, Color.red);
+        UnityEngine.Debug.DrawLine(transform.position, transform.position + direction, Color.red);
 
         if (direction != Vector3.zero && !isSeenByPlayer && !shouldStop)
         {
+            anim.SetBool("isChasing", true);
             rb.mass = 1f;
             rb.AddForce(direction.normalized * enemySpeed * Time.deltaTime, ForceMode2D.Force);
         }
         else if(isSeenByPlayer || shouldStop)
         {
+            anim.SetBool("isChasing", false);
             rb.velocity = Vector3.zero;
             rb.angularVelocity = 0f;
             rb.mass = 1000f;
@@ -247,6 +301,13 @@ public class EnemyController : MonoBehaviour
                 stuckAtEachOtherTimer.Start();
             }
         }
+        if(collision.gameObject.CompareTag("door"))
+        {
+            if(!stuckAtDoorTimer.IsRunning)
+            {
+                stuckAtDoorTimer.Start();
+            }
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -266,6 +327,11 @@ public class EnemyController : MonoBehaviour
         {
             stuckAtEachOtherTimer.Stop();
             stuckAtEachOtherTimer.Reset();
+        }
+        if (collision.gameObject.CompareTag("door"))
+        {
+            stuckAtDoorTimer.Stop();
+            stuckAtDoorTimer.Reset();
         }
     }
 }
