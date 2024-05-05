@@ -94,14 +94,15 @@ public class Pathfinding
             float width = boundary.GetComponent<Collider2D>().bounds.size.x;
             float height = boundary.GetComponent<Collider2D>().bounds.size.y;
             Vector3 bottomLeftCoord = boundary.transform.position - new Vector3(width/2, -height/2);
-            for (int x = 0; x < width/grid.GetCellSize(); x++)
+            for (int x = 0; x < width/grid.GetCellSize() + 1; x++)
             {
-                for(int y = 0; y < height/grid.GetCellSize(); y++)
+                for(int y = 0; y < height/grid.GetCellSize() + 1; y++)
                 {
                     Vector3 gridNodePosition = bottomLeftCoord + new Vector3 (grid.GetCellSize() * x, -grid.GetCellSize() * y);
-                    Debug.Log(gridNodePosition);
+                    
                     PathNode node = grid.GetGridObject(gridNodePosition);
                     gridNodePosition = GameController.pathfinding.NodeToVector3(node);
+                    Debug.Log(gridNodePosition);
                     //node bottom left corner
                     if (MyFunctions.IsInsideCollider(boundary, gridNodePosition))
                     {
