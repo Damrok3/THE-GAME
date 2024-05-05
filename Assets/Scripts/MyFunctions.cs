@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class MyFunctions
 {
@@ -24,6 +25,12 @@ public class MyFunctions
         screenPosition.z = Camera.main.nearClipPlane + 1;
         Vector2 position = Camera.main.ScreenToWorldPoint(screenPosition);
         return position;
+    }
+
+    public static float GetVectorAngle(Vector3 directionVec)
+    {
+        float angleInRadians = Mathf.Atan2(directionVec.y, directionVec.x);
+        return angleInRadians * Mathf.Rad2Deg;
     }
 }
 

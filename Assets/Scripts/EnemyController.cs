@@ -1,10 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 using System.Diagnostics;
-using System.Data;
-using Unity.VisualScripting;
+using System.Collections;
 
 public class EnemyController : MonoBehaviour
 {
@@ -32,6 +29,7 @@ public class EnemyController : MonoBehaviour
     private bool wentDown= false;
     private bool wentLeft = false;
     private bool wentUp = false;
+    private float slerpSpeed = 5f;
 
     private Stopwatch stuckAtEachOtherTimer = new Stopwatch();
     private Stopwatch stuckAtDoorTimer = new Stopwatch();
@@ -46,6 +44,8 @@ public class EnemyController : MonoBehaviour
     public bool shouldPathAroundDoor = false;
 
     public float enemySpeed;
+
+    Coroutine rotationCouroutine;
 
     // Start is called before the first frame update
     void Start()
@@ -63,13 +63,16 @@ public class EnemyController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
         if (shouldFindPath())
         {
             path = FindPath();
         }
         DebugPath();
         MoveTowardsPlayer();
+        if(!isSeenByPlayer)
+        {
+            Rotate();
+        }
         ManageCollissions();
         ClearTraversedPath();
 
@@ -90,6 +93,13 @@ public class EnemyController : MonoBehaviour
         //}
 
     }
+
+    private void Rotate()
+    {
+        float time = Time.deltaTime * slerpSpeed;
+        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(new Vector3(0, 0, MyFunctions.GetVectorAngle(direction))), time);
+    }
+
 
     private void ManageCollissions()
     {   
@@ -178,8 +188,8 @@ public class EnemyController : MonoBehaviour
         }
         else if (path != null && path.Count >= 2)
         {
-            Vector3 vec3Node = Testing.pathfinding.NodeToVector3(path[1]);
-            direction = (vec3Node - transform.position) + new Vector3(Testing.cellSize / 2, Testing.cellSize / 2, 0f);
+            Vector3 vec3Node = GameController.pathfinding.NodeToVector3(path[1]);
+            direction = (vec3Node - transform.position) + new Vector3(GameController.cellSize / 2, GameController.cellSize / 2, 0f);
         }
         else
         {
@@ -228,8 +238,8 @@ public class EnemyController : MonoBehaviour
         {
             for (int i = 0; i < path.Count - 1; i++)
             {
-                UnityEngine.Debug.DrawLine(new Vector3(path[i].x, path[i].y) * Testing.cellSize + Vector3.one * Testing.cellSize / 2,
-                new Vector3(path[i + 1].x, path[i + 1].y) * Testing.cellSize + Vector3.one * Testing.cellSize / 2,
+                UnityEngine.Debug.DrawLine(new Vector3(path[i].x, path[i].y) * GameController.cellSize + Vector3.one * GameController.cellSize / 2,
+                new Vector3(path[i + 1].x, path[i + 1].y) * GameController.cellSize + Vector3.one * GameController.cellSize / 2,
                 Color.green);
             }
         }
@@ -240,7 +250,7 @@ public class EnemyController : MonoBehaviour
         {
             path = null;
         }
-        if (path != null && (Testing.pathfinding.NodeToVector3(path[1]) - transform.position).magnitude < 3.6f)
+        if (path != null && (GameController.pathfinding.NodeToVector3(path[1]) - transform.position).magnitude < 3.6f)
         {
             path.Remove(path[0]);
             path.Remove(path[0]);
@@ -253,28 +263,28 @@ public class EnemyController : MonoBehaviour
     }
     private List<PathNode> FindPath()
     {
-        grid = Testing.pathfinding.GetGrid();
+        grid = GameController.pathfinding.GetGrid();
         int Px, Py;
         int x, y;
-        if (Testing.isPlayerOnThePath)
+        if (GameController.isPlayerOnThePath)
         {
             grid.GetXY(player.transform.position, out Px, out Py);
         }
         else
         {
-            grid.GetXY(Testing.playerClosestPathNodePosition, out Px, out Py);
+            grid.GetXY(GameController.playerClosestPathNodePosition, out Px, out Py);
         }
 
         if (!grid.GetGridObject(transform.position).isWalkable)
         {
-            Vector3 nearestWalkableNodePos = Testing.pathfinding.getNearestWalkableNodePosition(gameObject);
+            Vector3 nearestWalkableNodePos = GameController.pathfinding.getNearestWalkableNodePosition(gameObject);
             grid.GetXY(nearestWalkableNodePos, out x, out y);
         }
         else
         {
             grid.GetXY(transform.position, out x, out y); 
         }
-        List<PathNode> path = Testing.pathfinding.FindPath(x, y, Px, Py);
+        List<PathNode> path = GameController.pathfinding.FindPath(x, y, Px, Py);
         return path;
     }
 

@@ -7,6 +7,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     public float speed = 1;
+    public float rotationSpeed;
     public List<AudioClip> clips;
     private AudioSource audioSrc;
     private Animator anim;
@@ -29,6 +30,11 @@ public class PlayerController : MonoBehaviour
     {
         ManagePlayerLookDirection();
         
+        
+    }
+
+    void Update()
+    {
         ManagePlayerMovement();
     }
 
@@ -62,9 +68,10 @@ public class PlayerController : MonoBehaviour
 
     private void ManagePlayerLookDirection()
     {
-        transform.rotation = Quaternion.Euler(new Vector3(0, 0, GetPlayerAngle() - 90));
-        
+        rb.angularVelocity = 0f;
+        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(new Vector3(0, 0, GetPlayerAngle() - 90)), Time.deltaTime * 5f);
     }
+
 
     private float GetPlayerAngle()
     {

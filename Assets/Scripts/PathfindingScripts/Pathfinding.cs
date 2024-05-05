@@ -88,42 +88,43 @@ public class Pathfinding
 
     public void InitializePathBoundaries(GameObject [] boundaryArray)
     {
-        for (int x = 0; x < grid.GetWidth(); x++)
+        foreach (GameObject boundary in boundaryArray)
         {
-            for(int y = 0; y < grid.GetHeight(); y ++)
+            
+            float width = boundary.GetComponent<Collider2D>().bounds.size.x;
+            float height = boundary.GetComponent<Collider2D>().bounds.size.y;
+            Vector3 bottomLeftCoord = boundary.transform.position - new Vector3(width/2, -height/2);
+            for (int x = 0; x < width/grid.GetCellSize(); x++)
             {
-                PathNode node = grid.GetGridObject(x, y);
-                
-
-                float xPos = node.x;
-                float yPos = node.y;
-                grid.GetXYtoWorldPosition(ref xPos, ref yPos);
-                Vector3 gridNodePosition = new Vector3(xPos, yPos);
-                foreach (GameObject boundary in boundaryArray)
+                for(int y = 0; y < height/grid.GetCellSize(); y++)
                 {
+                    Vector3 gridNodePosition = bottomLeftCoord + new Vector3 (grid.GetCellSize() * x, -grid.GetCellSize() * y);
+                    Debug.Log(gridNodePosition);
+                    PathNode node = grid.GetGridObject(gridNodePosition);
+                    gridNodePosition = GameController.pathfinding.NodeToVector3(node);
                     //node bottom left corner
-                    if(MyFunctions.IsInsideCollider(boundary, gridNodePosition))
+                    if (MyFunctions.IsInsideCollider(boundary, gridNodePosition))
                     {
-                        node.isWalkable = false;                     
+                        node.isWalkable = false;
                     }
                     //bottom right
-                    else if(MyFunctions.IsInsideCollider(boundary, gridNodePosition + new Vector3(grid.GetCellSize(), 0)))
+                    else if (MyFunctions.IsInsideCollider(boundary, gridNodePosition + new Vector3(grid.GetCellSize(), 0)))
                     {
                         node.isWalkable = false;
                     }
                     //upper left
-                    else if(MyFunctions.IsInsideCollider(boundary, gridNodePosition + new Vector3(0, grid.GetCellSize())))
+                    else if (MyFunctions.IsInsideCollider(boundary, gridNodePosition + new Vector3(0, grid.GetCellSize())))
                     {
                         node.isWalkable = false;
                     }
                     //upper right
-                    else if(MyFunctions.IsInsideCollider(boundary, gridNodePosition + new Vector3(grid.GetCellSize(), grid.GetCellSize())))
+                    else if (MyFunctions.IsInsideCollider(boundary, gridNodePosition + new Vector3(grid.GetCellSize(), grid.GetCellSize())))
                     {
                         node.isWalkable = false;
                     }
                 }
             }
-        }      
+        }
     }
     public Vector3 getNearestWalkableNodePosition(GameObject gameObject)
     {

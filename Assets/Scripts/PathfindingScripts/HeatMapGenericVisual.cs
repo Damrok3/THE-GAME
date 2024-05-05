@@ -39,12 +39,12 @@ public class HeatMapGenericVisual : MonoBehaviour
         if(mesh != null)
         {
 
-            CreateEmptyMeshArrays(grid.GetWidth() * grid.GetHeight(), out Vector3[] vertices, out Vector2[] uv, out int[] triangles);
-            for (int x = 0; x < grid.GetWidth(); x++)
+            CreateEmptyMeshArrays(grid.GetWidth() / 5 * grid.GetHeight() / 5, out Vector3[] vertices, out Vector2[] uv, out int[] triangles);
+            for (int x = 0; x < grid.GetWidth() / 5; x++)
             {
-                for (int y = 0; y < grid.GetHeight(); y++)
+                for (int y = 0; y < grid.GetHeight() / 5; y++)
                 {
-                    int index = x * grid.GetHeight() + y;
+                    int index = x * grid.GetHeight() / 5 + y;
                     Vector3 quadSize = new Vector3(1, 1) * grid.GetCellSize();
                     PathNode gridObject = grid.GetGridObject(x, y);
                     float gridValue = gridObject.isWalkable ? 0f : 0.1f;

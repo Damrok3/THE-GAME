@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Testing : MonoBehaviour
+public class GameController : MonoBehaviour
 {
     [SerializeField] private GameObject player; 
     [SerializeField] private HeatMapGenericVisual heatMap;
