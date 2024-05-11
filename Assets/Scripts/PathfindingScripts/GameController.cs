@@ -19,6 +19,7 @@ public class GameController : MonoBehaviour
         pathfinding = new Pathfinding(300, 269, cellSize);
         noPathZoneList = GameObject.FindGameObjectsWithTag("nopathzone");
         pathfinding.InitializePathBoundaries(noPathZoneList);
+        //TestPathfinding(pathfinding.GetGrid());
         heatMap.SetGrid(pathfinding.GetGrid());
         pathfinding.GetGrid().TriggerGridObjectChanged();
     }
@@ -26,6 +27,23 @@ public class GameController : MonoBehaviour
     {
         HandleInput();
         CheckIfPlayerOnPath();       
+    }
+
+    private void TestPathfinding(Grid<PathNode> grid)
+    {
+        GameObject testObj = GameObject.Find("testobj");
+        for(int i = 0; i < grid.GetWidth(); i++)
+        {
+            for(int j = 0; j < grid.GetHeight(); j++)
+            {
+                if(!grid.GetGridObject(i, j).isWalkable)
+                {
+                    Instantiate(testObj, grid.GetWorldPosition(i, j) + new Vector3 (grid.GetCellSize() / 2, grid.GetCellSize() /2 ), testObj.transform.rotation);
+                
+                }
+            }
+        }
+   
     }
 
     private void HandleInput()

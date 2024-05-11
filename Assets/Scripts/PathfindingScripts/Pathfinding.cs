@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.U2D;
 
 public class Pathfinding
 {
@@ -90,19 +91,29 @@ public class Pathfinding
     {
         foreach (GameObject boundary in boundaryArray)
         {
-            
-            float width = boundary.GetComponent<Collider2D>().bounds.size.x;
-            float height = boundary.GetComponent<Collider2D>().bounds.size.y;
-            Vector3 bottomLeftCoord = boundary.transform.position - new Vector3(width/2, -height/2);
+            float width;
+            float height;
+
+            if (boundary.GetComponent<SpriteShapeController>() != null)
+            {
+                width = boundary.GetComponent<Collider2D>().bounds.size.x * 2;
+                height = boundary.GetComponent<Collider2D>().bounds.size.y * 2;
+            }
+            else
+            {
+                width = boundary.GetComponent<Collider2D>().bounds.size.x;
+                height = boundary.GetComponent<Collider2D>().bounds.size.y;
+            }
+
+            Vector3 bottomLeftCoord = boundary.transform.position - new Vector3(width/2, height/2);
             for (int x = 0; x < width/grid.GetCellSize() + 1; x++)
             {
                 for(int y = 0; y < height/grid.GetCellSize() + 1; y++)
                 {
-                    Vector3 gridNodePosition = bottomLeftCoord + new Vector3 (grid.GetCellSize() * x, -grid.GetCellSize() * y);
+                    Vector3 gridNodePosition = bottomLeftCoord + new Vector3 (grid.GetCellSize() * x, grid.GetCellSize() * y);
                     
                     PathNode node = grid.GetGridObject(gridNodePosition);
                     gridNodePosition = GameController.pathfinding.NodeToVector3(node);
-                    Debug.Log(gridNodePosition);
                     //node bottom left corner
                     if (MyFunctions.IsInsideCollider(boundary, gridNodePosition))
                     {
@@ -127,10 +138,11 @@ public class Pathfinding
             }
         }
     }
+
     public Vector3 getNearestWalkableNodePosition(GameObject gameObject)
     {
         float smallestNoPathZoneDist = float.MaxValue;
-        Vector3 objPos = gameObject.transform.position;
+        Vector3 playerPos = gameObject.transform.position;
         GameObject nearestNoPathZone = null;
         GameObject[] noPathZoneList = GameObject.FindGameObjectsWithTag("nopathzone");
 
@@ -145,9 +157,9 @@ public class Pathfinding
             {
                 c = noPathZone.GetComponent<EdgeCollider2D>();
             }
-            if ((objPos - c.bounds.ClosestPoint(objPos)).magnitude < smallestNoPathZoneDist)
+            if ((playerPos - (Vector3)c.ClosestPoint(playerPos)).magnitude < smallestNoPathZoneDist)
             {
-                smallestNoPathZoneDist = (objPos - c.bounds.ClosestPoint(objPos)).magnitude;
+                smallestNoPathZoneDist = (playerPos - (Vector3)c.ClosestPoint(playerPos)).magnitude;
                 nearestNoPathZone = noPathZone;
             }
         }
@@ -163,46 +175,68 @@ public class Pathfinding
                 c = nearestNoPathZone.GetComponent<EdgeCollider2D>();
             }
 
-            Vector3 pointOnZoneSurface = c.bounds.ClosestPoint(objPos);
+            Vector3 pointOnZoneSurface = c.ClosestPoint(playerPos);
             pointOnZoneSurface = new Vector3(pointOnZoneSurface.x, pointOnZoneSurface.y, 0);
             Vector3 awayFromColliderCenter;
             // if outside of collider, get the nearest point on the surface
-            if (pointOnZoneSurface != objPos)
+            if (pointOnZoneSurface != playerPos)
             {
-                awayFromColliderCenter = (objPos - pointOnZoneSurface).normalized;
+                awayFromColliderCenter = (playerPos - pointOnZoneSurface).normalized;
             }
             // if inside calculate the position of the closest edge and use that to set the point on surface
             else
             {
+                //pain and suffering
+
                 Vector3 zonePos = nearestNoPathZone.transform.position;
-                float zoneSizeY = c.bounds.size.y;
-                float zoneSizeX = c.bounds.size.x;
-               
+                float zoneSizeY = nearestNoPathZone.transform.localScale.y;
+                float zoneSizeX = nearestNoPathZone.transform.localScale.x;
+
+                Vector3 playerFromOtherEdge =  playerPos - (zonePos - nearestNoPathZone.transform.up * zoneSizeY / 2);  
+                Vector3 playerFromOtherEdge2 =  playerPos - (zonePos + nearestNoPathZone.transform.up * zoneSizeY / 2);  
+                Vector3 playerFromOtherEdge3 =  playerPos - (zonePos - nearestNoPathZone.transform.right * zoneSizeX / 2);  
+                Vector3 playerFromOtherEdge4 =  playerPos - (zonePos + nearestNoPathZone.transform.right * zoneSizeX / 2);  
+                Vector3 normal = nearestNoPathZone.transform.up;
+                Vector3 normal2 = nearestNoPathZone.transform.right;
+                Vector3 playerVectorProject = Vector3.Project(playerFromOtherEdge, normal);  
+                Vector3 playerVectorProject2 = Vector3.Project(playerFromOtherEdge2, normal);  
+                Vector3 playerVectorProject3 = Vector3.Project(playerFromOtherEdge3, normal2);  
+                Vector3 playerVectorProject4 = Vector3.Project(playerFromOtherEdge4, normal2);  
+                
+                float dist = zoneSizeY - Vector3.Magnitude(playerVectorProject);
+                float dist2 = zoneSizeY - Vector3.Magnitude(playerVectorProject2);
+                float dist3 = zoneSizeX - Vector3.Magnitude(playerVectorProject3);
+                float dist4 = zoneSizeX - Vector3.Magnitude(playerVectorProject4);
+
                 List<Vector3> edges = new List<Vector3>()
                 {
-                     new Vector3(objPos.x, zonePos.y + zoneSizeY / 2),
-                     new Vector3(objPos.x, zonePos.y - zoneSizeY / 2),
-                     new Vector3(zonePos.x - zoneSizeX / 2, objPos.y),
-                     new Vector3(zonePos.x + zoneSizeX / 2, objPos.y)
+                     new Vector3(playerPos.x, playerPos.y) +  nearestNoPathZone.transform.up * dist,
+                     new Vector3(playerPos.x, playerPos.y) - nearestNoPathZone.transform.up * dist2,
+                     new Vector3(playerPos.x, playerPos.y) + nearestNoPathZone.transform.right * dist3,
+                     new Vector3(playerPos.x, playerPos.y) - nearestNoPathZone.transform.right * dist4
                 };
+                
+
+
                 float surfaceDist = float.MaxValue;
                 foreach (Vector3 edge in edges)
                 {
-                    if((objPos - edge).magnitude < surfaceDist)
+                    
+                    if ((playerPos - edge).magnitude < surfaceDist)
                     {
                         pointOnZoneSurface = edge;
-                        surfaceDist = (objPos - edge).magnitude;
+                        surfaceDist = (playerPos - edge).magnitude;
                     }
                 }
-                
-                awayFromColliderCenter = (pointOnZoneSurface - objPos).normalized;
+
+                awayFromColliderCenter = (pointOnZoneSurface - playerPos).normalized;
             }
-            Debug.DrawLine(objPos, pointOnZoneSurface, Color.blue);
-            while (!GetGrid().GetGridObject(objPos).isWalkable)
+            Debug.DrawLine(playerPos, pointOnZoneSurface, Color.blue);
+            while (!GetGrid().GetGridObject(playerPos).isWalkable)
             {
-                objPos += awayFromColliderCenter;
+                playerPos += awayFromColliderCenter;
             }
-            return objPos;
+            return playerPos;
         }
         else
         {
