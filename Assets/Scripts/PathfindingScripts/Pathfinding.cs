@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.U2D;
 
@@ -185,23 +183,22 @@ public class Pathfinding
             }
             // if inside calculate the position of the closest edge and use that to set the point on surface
             else
-            {
-                //pain and suffering
+            { 
 
                 Vector3 zonePos = nearestNoPathZone.transform.position;
                 float zoneSizeY = nearestNoPathZone.transform.localScale.y;
                 float zoneSizeX = nearestNoPathZone.transform.localScale.x;
 
-                Vector3 playerFromOtherEdge =  playerPos - (zonePos - nearestNoPathZone.transform.up * zoneSizeY / 2);  
-                Vector3 playerFromOtherEdge2 =  playerPos - (zonePos + nearestNoPathZone.transform.up * zoneSizeY / 2);  
-                Vector3 playerFromOtherEdge3 =  playerPos - (zonePos - nearestNoPathZone.transform.right * zoneSizeX / 2);  
-                Vector3 playerFromOtherEdge4 =  playerPos - (zonePos + nearestNoPathZone.transform.right * zoneSizeX / 2);  
-                Vector3 normal = nearestNoPathZone.transform.up;
-                Vector3 normal2 = nearestNoPathZone.transform.right;
-                Vector3 playerVectorProject = Vector3.Project(playerFromOtherEdge, normal);  
-                Vector3 playerVectorProject2 = Vector3.Project(playerFromOtherEdge2, normal);  
-                Vector3 playerVectorProject3 = Vector3.Project(playerFromOtherEdge3, normal2);  
-                Vector3 playerVectorProject4 = Vector3.Project(playerFromOtherEdge4, normal2);  
+                Vector3 normalVertical = nearestNoPathZone.transform.up;
+                Vector3 normalHorizontal = nearestNoPathZone.transform.right;
+                Vector3 oppositeEdgeDistVec =  playerPos - (zonePos - normalVertical * zoneSizeY / 2);  
+                Vector3 oppositeEdgeDistVec2 =  playerPos - (zonePos + normalVertical * zoneSizeY / 2);  
+                Vector3 oppositeEdgeDistVec3 =  playerPos - (zonePos - normalHorizontal * zoneSizeX / 2);  
+                Vector3 oppositeEdgeDistVec4 =  playerPos - (zonePos + normalHorizontal * zoneSizeX / 2);  
+                Vector3 playerVectorProject = Vector3.Project(oppositeEdgeDistVec, normalVertical);  
+                Vector3 playerVectorProject2 = Vector3.Project(oppositeEdgeDistVec2, normalVertical);  
+                Vector3 playerVectorProject3 = Vector3.Project(oppositeEdgeDistVec3, normalHorizontal);  
+                Vector3 playerVectorProject4 = Vector3.Project(oppositeEdgeDistVec4, normalHorizontal);  
                 
                 float dist = zoneSizeY - Vector3.Magnitude(playerVectorProject);
                 float dist2 = zoneSizeY - Vector3.Magnitude(playerVectorProject2);
@@ -210,13 +207,11 @@ public class Pathfinding
 
                 List<Vector3> edges = new List<Vector3>()
                 {
-                     new Vector3(playerPos.x, playerPos.y) +  nearestNoPathZone.transform.up * dist,
-                     new Vector3(playerPos.x, playerPos.y) - nearestNoPathZone.transform.up * dist2,
-                     new Vector3(playerPos.x, playerPos.y) + nearestNoPathZone.transform.right * dist3,
-                     new Vector3(playerPos.x, playerPos.y) - nearestNoPathZone.transform.right * dist4
+                     new Vector3(playerPos.x, playerPos.y) +  normalVertical * dist,
+                     new Vector3(playerPos.x, playerPos.y) - normalVertical * dist2,
+                     new Vector3(playerPos.x, playerPos.y) + normalHorizontal * dist3,
+                     new Vector3(playerPos.x, playerPos.y) - normalHorizontal * dist4
                 };
-                
-
 
                 float surfaceDist = float.MaxValue;
                 foreach (Vector3 edge in edges)

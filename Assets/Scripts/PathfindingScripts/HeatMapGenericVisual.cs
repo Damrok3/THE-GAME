@@ -13,7 +13,7 @@ public class HeatMapGenericVisual : MonoBehaviour
         mesh = new Mesh();
         GetComponent<MeshFilter>().mesh = mesh;
     }
-    private void Grid_OnGridValueChanged(object sender, Grid<PathNode>.OnGridObjectChangedEventArgs e)
+    private void Grid_OnGridValueChanged(object sender, GameController.EventArgs e)
     {
         updateMesh = true;
         UpdateHeatMapVisual();
@@ -24,7 +24,7 @@ public class HeatMapGenericVisual : MonoBehaviour
         
         UpdateHeatMapVisual();
         
-        grid.OnGridObjectChanged += Grid_OnGridValueChanged;
+        GameController.current.GameEvent += Grid_OnGridValueChanged;
     }
     private void LateUpdate()
     {

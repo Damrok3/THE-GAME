@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Diagnostics;
-using System.Collections;
 
 public class EnemyController : MonoBehaviour
 {

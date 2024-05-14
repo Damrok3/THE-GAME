@@ -1,22 +1,10 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Grid<TGridObject>
 {
     public const int HEAT_MAP_MAX_VALUE = 100;
     public const int HEAT_MAP_MIN_VALUE = 0;
-
-    //.net standard for declaring an event handler that can take class object and store its data as well as trigger certain things
-    public event EventHandler<OnGridObjectChangedEventArgs> OnGridObjectChanged;
-
-    //declaration of a class that objects of can be passed inside of the event
-    public class OnGridObjectChangedEventArgs : EventArgs
-    {
-        public int x;
-        public int y;
-    }
 
     private int width;
     private int height;
@@ -70,7 +58,7 @@ public class Grid<TGridObject>
             //lambda expression that changes the value of debug text array subscribed to the event
             if (showDebugText)
             {
-                OnGridObjectChanged += (object sender, OnGridObjectChangedEventArgs eventArgs) =>
+                GameController.current.GameEvent += (object sender, GameController.EventArgs eventArgs) => 
                 {
                     debugTextArray[eventArgs.x, eventArgs.y].text = gridArray[eventArgs.x, eventArgs.y]?.ToString();
                 };
@@ -104,41 +92,7 @@ public class Grid<TGridObject>
         x = x * cellSize + originPosition.x;
         y = y * cellSize + originPosition.y;
     }
-    public void SetGridObject(Vector3 worldPosition, TGridObject value)
-    {
-        int x, y;
-        GetXY(worldPosition, out x, out y);
-        SetGridObject(x, y, value);
-    }
-    public void SetGridObject(int x, int y, TGridObject value)
-    {
-        if (x >= 0 && y >= 0 && x < width && y < height)
-        {
-            gridArray[x, y] = value;
-
-            //null checking the event in case there is no subscribers attached to it and then invoking the event while passing values into it
-            OnGridObjectChanged?.Invoke(this, new OnGridObjectChangedEventArgs { x = x, y = y });
-
-        }
-    }
-
-    public void TriggerGridObjectChanged(int x, int y)
-    {
-        OnGridObjectChanged?.Invoke(this, new OnGridObjectChangedEventArgs { x = x, y = y });
-    }
-
-    public void TriggerGridObjectChanged()
-    {
-        OnGridObjectChanged?.Invoke(this, new OnGridObjectChangedEventArgs { });
-    }
-
-    //METHOD SPECIFICALLY FOR THE HEATMAP
-    //public void AddValue(int x, int y, TGridObject value)
-    //{
-    //    SetValue(x, y, GetValue(x, y) + value);
-    //}
-
-    // returns grid object after passing position in X, Y
+    
     public TGridObject GetGridObject(int x, int y)
     {
         if (x >= 0 && y >= 0 && x < width && y < height)
@@ -158,38 +112,6 @@ public class Grid<TGridObject>
         return GetGridObject(x, y);
     }
 
-    //METHOD SPECIFICALLY FOR THE HEATMAP
-    //public void AddValue(Vector3 worldPosition, int value, int fullValueRange, int totalRange)
-    //{
-    //    int lowerValueAmount = Mathf.RoundToInt((float)value / (totalRange - fullValueRange));
-
-    //    GetXY(worldPosition, out int originX, out int originY);
-    //    for (int x = 0; x < totalRange; x++)
-    //    {
-    //        for (int y = 0; y < totalRange - x; y++)
-    //        {
-    //            int radius = x + y;
-    //            int addValueAmount = value;
-    //            if(radius > fullValueRange)
-    //            {
-    //                addValueAmount -= lowerValueAmount  * (radius - fullValueRange);
-    //            }
-    //            AddValue(originX + x, originY + y, addValueAmount);
-    //            if(x != 0)
-    //            {
-    //                AddValue(originX - x, originY + y, addValueAmount);
-    //            }
-    //            if(y != 0)
-    //            {
-    //                AddValue(originX + x, originY - y, addValueAmount);
-    //                if(x != 0)
-    //                {
-    //                    AddValue(originX - x, originY - y, addValueAmount);
-    //                }
-    //            }
-    //        }
-    //    }
-    //}
     public Vector3 GetWorldPosition(int x, int y)
     {
         return new Vector3(x, y) * cellSize + originPosition;

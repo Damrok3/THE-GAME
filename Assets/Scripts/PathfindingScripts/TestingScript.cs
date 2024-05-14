@@ -77,7 +77,7 @@ public class HeatMapGridObject
     {
         value += addValue;
         value = Mathf.Clamp(value, MIN, MAX);
-        grid.TriggerGridObjectChanged(x, y);
+        //grid.TriggerGridObjectChanged(x, y);
     }
 
     public float GetValueNormalized()
@@ -112,13 +112,13 @@ public class StringGridObject
     public void AddLetter(string letter) 
     {
         letters += letter;
-        grid.TriggerGridObjectChanged(x, y);
+        //grid.TriggerGridObjectChanged(x, y);
     }
 
     public void AddNumber(string number)
     {
         numbers += number;
-        grid.TriggerGridObjectChanged(x, y);
+        //grid.TriggerGridObjectChanged(x, y);
     }
 
     public override string ToString()

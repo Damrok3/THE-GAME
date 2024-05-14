@@ -1,4 +1,4 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,10 +8,28 @@ public class GameController : MonoBehaviour
     [SerializeField] private HeatMapGenericVisual heatMap;
     private GameObject [] noPathZoneList;
 
+    // reference to the GameController class letting me to access the events outside of this script
+    public static GameController current;
     public static Pathfinding pathfinding;
     public static float cellSize = 5f;
     public static Vector3 playerClosestPathNodePosition;
     public static bool isPlayerOnThePath = true;
+
+    //.net standard for declaring an event handler that can take class object and store its data as well as trigger certain things
+    public event EventHandler<EventArgs> GameEvent;
+
+    //declaration of a class that objects of can be passed inside of the event
+    public class EventArgs : System.EventArgs
+    {
+        public int x;
+        public int y;
+
+    }
+
+    private void Awake()
+    {
+        current = this;
+    }
 
     private void Start()
     {
@@ -21,7 +39,7 @@ public class GameController : MonoBehaviour
         pathfinding.InitializePathBoundaries(noPathZoneList);
         //TestPathfinding(pathfinding.GetGrid());
         heatMap.SetGrid(pathfinding.GetGrid());
-        pathfinding.GetGrid().TriggerGridObjectChanged();
+        GameEvent?.Invoke(this, new EventArgs { });
     }
     private void Update()
     {
@@ -71,7 +89,7 @@ public class GameController : MonoBehaviour
             PathNode node = pathfinding.GetGrid().GetGridObject(position);
             node.isWalkable = !node.isWalkable;
             //pathfinding.GetGrid().GetXY(position, out int x, out int y);
-            pathfinding.GetGrid().TriggerGridObjectChanged();
+            GameEvent?.Invoke(this, new EventArgs { });
         }
     }
     private void CheckIfPlayerOnPath()
