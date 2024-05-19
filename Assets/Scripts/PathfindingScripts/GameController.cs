@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class GameController : MonoBehaviour
@@ -14,6 +16,9 @@ public class GameController : MonoBehaviour
     public static float cellSize = 5f;
     public static Vector3 playerClosestPathNodePosition;
     public static bool isPlayerOnThePath = true;
+    public static int keysCollected = 0;
+
+    public TextMeshProUGUI keyScore;
 
     //.net standard for declaring an event handler that can take class object and store its data as well as trigger certain things
     public event EventHandler<EventArgs> GameEvent;
@@ -23,7 +28,7 @@ public class GameController : MonoBehaviour
     {
         public int x;
         public int y;
-
+        public string eventName;
     }
 
     private void Awake()
@@ -44,7 +49,18 @@ public class GameController : MonoBehaviour
     private void Update()
     {
         HandleInput();
-        CheckIfPlayerOnPath();       
+        CheckIfPlayerOnPath();
+        UpdateKeyCount();
+    }
+
+    private void UpdateKeyCount()
+    {
+        keyScore.text = keysCollected.ToString();
+    }
+
+    public void FireEvent(string name)
+    {
+        GameEvent?.Invoke(this, new EventArgs { eventName = name});
     }
 
     private void TestPathfinding(Grid<PathNode> grid)
@@ -56,12 +72,10 @@ public class GameController : MonoBehaviour
             {
                 if(!grid.GetGridObject(i, j).isWalkable)
                 {
-                    Instantiate(testObj, grid.GetWorldPosition(i, j) + new Vector3 (grid.GetCellSize() / 2, grid.GetCellSize() /2 ), testObj.transform.rotation);
-                
+                    Instantiate(testObj, grid.GetWorldPosition(i, j) + new Vector3(grid.GetCellSize() / 2, grid.GetCellSize() / 2), testObj.transform.rotation);
                 }
             }
         }
-   
     }
 
     private void HandleInput()

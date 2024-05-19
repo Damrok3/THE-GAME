@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
@@ -15,6 +16,7 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D rb;
     private Stopwatch audioDelay = new Stopwatch();
     private Stopwatch sprintCooldown = new Stopwatch();
+    public Slider staminaBar;
 
     // Start is called before the first frame update
     void Start()
@@ -48,22 +50,6 @@ public class PlayerController : MonoBehaviour
         float vAxis = Input.GetAxis("Vertical");
         if(hAxis != 0 || vAxis != 0)
         {
-            if (Input.GetKey(KeyCode.LeftShift) && !sprintCooldown.IsRunning)
-            {
-                finalSpeed = speed * 2;
-                audioSrc.pitch = 1.3f;
-                playerStamina -= Time.deltaTime * 15f;
-            }
-            else if (sprintCooldown.IsRunning)
-            {
-                finalSpeed = speed / 2;
-                audioSrc.pitch = 1;
-            }
-            else
-            {
-                finalSpeed = speed;
-                audioSrc.pitch = 1;
-            }
             if (audioDelay.ElapsedMilliseconds > 750)
             {
                 audioSrc.PlayOneShot(clips[Random.Range(0, clips.Count)]);
@@ -82,12 +68,32 @@ public class PlayerController : MonoBehaviour
     }
     private void ManagePLayerSprint()
     {
-        //UnityEngine.Debug.Log(playerStamina);
-        if (!Input.GetKey(KeyCode.LeftShift))
+        if (Input.GetKey(KeyCode.LeftShift) && !sprintCooldown.IsRunning)
+        {
+            finalSpeed = speed * 2;
+            audioSrc.pitch = 1.3f;
+            playerStamina -= Time.deltaTime * 15f;
+        }
+        else
         {
             playerStamina += Time.deltaTime * 5f;
+            if (sprintCooldown.IsRunning)
+            {
+                finalSpeed = speed / 2;
+                audioSrc.pitch = 1;
+            }
+            else
+            {
+                finalSpeed = speed;
+                audioSrc.pitch = 1;
+            }
         }
+
+        
+
         playerStamina = Mathf.Clamp(playerStamina, 0, 100);
+        staminaBar.value = playerStamina;
+
         if (playerStamina <= 0)
         {
             sprintCooldown.Start();
