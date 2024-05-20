@@ -52,7 +52,8 @@ public class PlayerController : MonoBehaviour
         {
             if (audioDelay.ElapsedMilliseconds > 750)
             {
-                audioSrc.PlayOneShot(clips[Random.Range(0, clips.Count)]);
+                audioSrc.clip = clips[Random.Range(0, clips.Count)];
+                audioSrc.Play();
                 audioDelay.Restart();
             }
             anim.SetBool("isWalking", true);
