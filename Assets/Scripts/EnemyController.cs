@@ -41,10 +41,9 @@ public class EnemyController : MonoBehaviour
     public bool isSeenByPlayer = false;
     public bool shouldStop = false;
     public bool shouldPathAroundDoor = false;
+    public int id;
 
     public float enemySpeed;
-
-    Coroutine rotationCouroutine;
 
     // Start is called before the first frame update
     void Start()
@@ -52,11 +51,21 @@ public class EnemyController : MonoBehaviour
         player = GameObject.Find("player");
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        GameController.current.GameEvent += PlayGrowl;
     }
 
     private void FixedUpdate()
     {
         CheckIfCanSeePlayer();
+    }
+
+    private void PlayGrowl(object sender, GameController.EventArgs a)
+    {
+        if(a.eventName == "playerHurt" && a.id == id)
+        {
+            AudioSource audio = gameObject.GetComponent<AudioSource>();
+            audio.PlayOneShot(audio.clip);
+        }
     }
 
     // Update is called once per frame

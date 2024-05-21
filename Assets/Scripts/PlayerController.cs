@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
@@ -16,7 +18,9 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D rb;
     private Stopwatch audioDelay = new Stopwatch();
     private Stopwatch sprintCooldown = new Stopwatch();
+    private bool Iframes = false;
     public Slider staminaBar;
+    public Volume globalVolume;
 
     // Start is called before the first frame update
     void Start()
@@ -127,5 +131,45 @@ public class PlayerController : MonoBehaviour
         return angleInRadians * Mathf.Rad2Deg;
     }
 
- 
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        EnemyController enemy = collision.gameObject.GetComponent<EnemyController>();
+        if(collision.gameObject.CompareTag("enemy") && !Iframes && !enemy.isSeenByPlayer)
+        {
+            StartCoroutine(ScreenHurtEffect());
+            StartCoroutine(PlayerIFrames());
+            PushPlayerAway(collision.transform.position, 200f);
+            GameController.current.FireEvent("playerHurt", enemy.id);
+        }
+    }
+
+    private void PushPlayerAway(Vector3 pushDir, float force)
+    {
+        Vector3 dir = (transform.position - pushDir).normalized;
+        rb.AddForce(dir * force, ForceMode2D.Impulse);
+    }
+
+    IEnumerator PlayerIFrames()
+    {
+        int blinks = 20;
+        Iframes = true;
+        SpriteRenderer renderer = gameObject.GetComponent<SpriteRenderer>();
+        while (blinks >= 0)
+        {
+            yield return new WaitForSeconds(0.05f);
+            renderer.enabled = !renderer.enabled;
+            blinks--;
+        }
+        renderer.enabled = true;
+        Iframes = false;
+    }
+
+    IEnumerator ScreenHurtEffect()
+    {
+        globalVolume.enabled = true;
+        yield return new WaitForSeconds(0.1f);
+        globalVolume.enabled = false;
+    }
+
+
 }

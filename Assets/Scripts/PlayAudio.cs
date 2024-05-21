@@ -14,9 +14,13 @@ public class PlayAudio : MonoBehaviour
 
     private void audioStart(object sender, GameController.EventArgs e)
     {
-        if(e.eventName == "keyPicked")
+        switch(e.eventName)
         {
-            audioSource.PlayOneShot(audio[0]);
+            case "keyPicked":
+                audioSource.PlayOneShot(audio[0]);
+                break;
+            default:
+                break;
         }
     }
 }

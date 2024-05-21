@@ -29,6 +29,7 @@ public class GameController : MonoBehaviour
         public int x;
         public int y;
         public string eventName;
+        public int id;
     }
 
     private void Awake()
@@ -61,6 +62,11 @@ public class GameController : MonoBehaviour
     public void FireEvent(string name)
     {
         GameEvent?.Invoke(this, new EventArgs { eventName = name});
+    }
+
+    public void FireEvent(string name, int ID)
+    {
+        GameEvent?.Invoke(this, new EventArgs { eventName = name, id = ID });
     }
 
     private void TestPathfinding(Grid<PathNode> grid)
