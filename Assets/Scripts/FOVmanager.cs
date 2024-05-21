@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class FOVmanager : MonoBehaviour
@@ -7,9 +6,14 @@ public class FOVmanager : MonoBehaviour
     public float fovAngle = 90f;
 
     public Transform fovPoint;
-    public List<GameObject> targets;
+    private GameObject[] targets;
 
     public float range = 8f;
+
+    private void Start()
+    {
+        targets = GameObject.FindGameObjectsWithTag("enemy");
+    }
 
     // Update is called once per frame
     void FixedUpdate()
@@ -27,18 +31,25 @@ public class FOVmanager : MonoBehaviour
                     if (hit.collider.gameObject.CompareTag("enemy"))
                     {
                         t.GetComponent<EnemyController>().isSeenByPlayer = true;
+                        StopAllCoroutines();
                     }
                     else
                     {
-                        t.GetComponent<EnemyController>().isSeenByPlayer = false;
+                         StartCoroutine(SeenByPlayerCooldown(t));
                     }
                 } 
             }
             else
             {
-                t.GetComponent<EnemyController>().isSeenByPlayer = false;
+                StartCoroutine(SeenByPlayerCooldown(t)); 
             }
         }
         
+    }
+
+    IEnumerator SeenByPlayerCooldown(GameObject t)
+    {
+        yield return new WaitForSeconds(5f);
+        t.GetComponent<EnemyController>().isSeenByPlayer = false;
     }
 }
