@@ -26,17 +26,14 @@ public class PlayerController : MonoBehaviour
         anim = GetComponent<Animator>();
         audioSrc = GetComponent<AudioSource>();
     }
-
     void LateUpdate()
     {
         ManagePlayerLookDirection();
     }
-
     void Update()
     {
         ManagePlayerMovement();   
     }
-
     private void ManagePlayerMovement()
     {
 
@@ -48,7 +45,7 @@ public class PlayerController : MonoBehaviour
         {
             if (!footStepPlaying)
             {
-                StartCoroutine(PlayFootStepCouroutine());
+                StartCoroutine(PlayFootStep());
             }
             anim.SetBool("isWalking", true);
             Vector2 vVector = Vector2.up * vAxis;
@@ -62,7 +59,6 @@ public class PlayerController : MonoBehaviour
             audioSrc.Stop();
         }
     }
-
     private void ManagePLayerSprint()
     {
         if (Input.GetKey(KeyCode.LeftShift) && !sprintCooldown.IsRunning)
@@ -110,8 +106,6 @@ public class PlayerController : MonoBehaviour
         }
         transform.rotation = Quaternion.Lerp(transform.rotation, rotation, Time.deltaTime * 5f);
     }
-
-
     private float GetPlayerAngle()
     {
         Vector2 mousePos = MyFunctions.GetMouseWorldPosition();
@@ -120,7 +114,6 @@ public class PlayerController : MonoBehaviour
         float angleInRadians = Mathf.Atan2(directionVec.y, directionVec.x);
         return angleInRadians * Mathf.Rad2Deg;
     }
-
     private void OnCollisionStay2D(Collision2D collision)
     {
         EnemyController enemy = collision.gameObject.GetComponent<EnemyController>();
@@ -132,14 +125,12 @@ public class PlayerController : MonoBehaviour
             GameController.current.FireEvent("playerHurt", enemy.id);
         }
     }
-
     private void PushPlayerAway(Vector3 pushDir, float force)
     {
         Vector3 dir = (transform.position - pushDir).normalized;
         rb.AddForce(dir * force, ForceMode2D.Impulse);
     }
-
-    IEnumerator PlayFootStepCouroutine()
+    IEnumerator PlayFootStep()
     {
         footStepPlaying = true;
         yield return new WaitForSeconds(0.75f);
@@ -161,13 +152,11 @@ public class PlayerController : MonoBehaviour
         renderer.enabled = true;
         Iframes = false;
     }
-
     IEnumerator ScreenHurtEffect()
     {
         globalVolume.enabled = true;
         yield return new WaitForSeconds(0.1f);
         globalVolume.enabled = false;
     }
-
 
 }
