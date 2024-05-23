@@ -1,48 +1,40 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
-    public float speed = 1;
+    public float speed;
     public float playerStamina;
     private float finalSpeed;
     public List<AudioClip> clips;
     private AudioSource audioSrc;
     private Animator anim;
     private Rigidbody2D rb;
-    private Stopwatch audioDelay = new Stopwatch();
+    private bool footStepPlaying = false;
     private Stopwatch sprintCooldown = new Stopwatch();
     private bool Iframes = false;
     public Slider staminaBar;
     public Volume globalVolume;
 
-    // Start is called before the first frame update
     void Start()
     {
-        
         rb = GetComponent<Rigidbody2D>();  
         anim = GetComponent<Animator>();
         audioSrc = GetComponent<AudioSource>();
-        audioDelay.Start();
-        
     }
 
-    // Update is called once per frame
     void LateUpdate()
     {
-            ManagePlayerLookDirection();
+        ManagePlayerLookDirection();
     }
 
     void Update()
     {
-        ManagePlayerMovement();
-        
+        ManagePlayerMovement();   
     }
 
     private void ManagePlayerMovement()
@@ -54,11 +46,9 @@ public class PlayerController : MonoBehaviour
         float vAxis = Input.GetAxis("Vertical");
         if(hAxis != 0 || vAxis != 0)
         {
-            if (audioDelay.ElapsedMilliseconds > 750)
+            if (!footStepPlaying)
             {
-                audioSrc.clip = clips[Random.Range(0, clips.Count)];
-                audioSrc.Play();
-                audioDelay.Restart();
+                StartCoroutine(PlayFootStepCouroutine());
             }
             anim.SetBool("isWalking", true);
             Vector2 vVector = Vector2.up * vAxis;
@@ -69,8 +59,10 @@ public class PlayerController : MonoBehaviour
         else
         {
             anim.SetBool("isWalking", false);
+            audioSrc.Stop();
         }
     }
+
     private void ManagePLayerSprint()
     {
         if (Input.GetKey(KeyCode.LeftShift) && !sprintCooldown.IsRunning)
@@ -93,8 +85,6 @@ public class PlayerController : MonoBehaviour
                 audioSrc.pitch = 1;
             }
         }
-
-        
 
         playerStamina = Mathf.Clamp(playerStamina, 0, 100);
         staminaBar.value = playerStamina;
@@ -149,6 +139,14 @@ public class PlayerController : MonoBehaviour
         rb.AddForce(dir * force, ForceMode2D.Impulse);
     }
 
+    IEnumerator PlayFootStepCouroutine()
+    {
+        footStepPlaying = true;
+        yield return new WaitForSeconds(0.75f);
+        audioSrc.clip = clips[Random.Range(0, clips.Count)];
+        audioSrc.Play();
+        footStepPlaying = false;
+    }
     IEnumerator PlayerIFrames()
     {
         int blinks = 20;
