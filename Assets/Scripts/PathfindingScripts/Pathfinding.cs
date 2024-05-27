@@ -140,7 +140,7 @@ public class Pathfinding
     public Vector3 getNearestWalkableNodePosition(GameObject gameObject)
     {
         float smallestNoPathZoneDist = float.MaxValue;
-        Vector3 playerPos = gameObject.transform.position;
+        Vector3 objPos = gameObject.transform.position;
         GameObject nearestNoPathZone = null;
         GameObject[] noPathZoneList = GameObject.FindGameObjectsWithTag("nopathzone");
 
@@ -155,9 +155,9 @@ public class Pathfinding
             {
                 c = noPathZone.GetComponent<EdgeCollider2D>();
             }
-            if ((playerPos - (Vector3)c.ClosestPoint(playerPos)).magnitude < smallestNoPathZoneDist)
+            if ((objPos - (Vector3)c.ClosestPoint(objPos)).magnitude < smallestNoPathZoneDist)
             {
-                smallestNoPathZoneDist = (playerPos - (Vector3)c.ClosestPoint(playerPos)).magnitude;
+                smallestNoPathZoneDist = (objPos - (Vector3)c.ClosestPoint(objPos)).magnitude;
                 nearestNoPathZone = noPathZone;
             }
         }
@@ -173,13 +173,13 @@ public class Pathfinding
                 c = nearestNoPathZone.GetComponent<EdgeCollider2D>();
             }
 
-            Vector3 pointOnZoneSurface = c.ClosestPoint(playerPos);
+            Vector3 pointOnZoneSurface = c.ClosestPoint(objPos);
             pointOnZoneSurface = new Vector3(pointOnZoneSurface.x, pointOnZoneSurface.y, 0);
             Vector3 awayFromColliderCenter;
             // if outside of collider, get the nearest point on the surface
-            if (pointOnZoneSurface != playerPos)
+            if (pointOnZoneSurface != objPos)
             {
-                awayFromColliderCenter = (playerPos - pointOnZoneSurface).normalized;
+                awayFromColliderCenter = (objPos - pointOnZoneSurface).normalized;
             }
             // if inside calculate the position of the closest edge and use that to set the point on surface
             else
@@ -191,10 +191,10 @@ public class Pathfinding
 
                 Vector3 normalVertical = nearestNoPathZone.transform.up;
                 Vector3 normalHorizontal = nearestNoPathZone.transform.right;
-                Vector3 oppositeEdgeDistVec =  playerPos - (zonePos - normalVertical * zoneSizeY / 2);  
-                Vector3 oppositeEdgeDistVec2 =  playerPos - (zonePos + normalVertical * zoneSizeY / 2);  
-                Vector3 oppositeEdgeDistVec3 =  playerPos - (zonePos - normalHorizontal * zoneSizeX / 2);  
-                Vector3 oppositeEdgeDistVec4 =  playerPos - (zonePos + normalHorizontal * zoneSizeX / 2);  
+                Vector3 oppositeEdgeDistVec =  objPos - (zonePos - normalVertical * zoneSizeY / 2);  
+                Vector3 oppositeEdgeDistVec2 =  objPos - (zonePos + normalVertical * zoneSizeY / 2);  
+                Vector3 oppositeEdgeDistVec3 =  objPos - (zonePos - normalHorizontal * zoneSizeX / 2);  
+                Vector3 oppositeEdgeDistVec4 =  objPos - (zonePos + normalHorizontal * zoneSizeX / 2);  
                 Vector3 playerVectorProject = Vector3.Project(oppositeEdgeDistVec, normalVertical);  
                 Vector3 playerVectorProject2 = Vector3.Project(oppositeEdgeDistVec2, normalVertical);  
                 Vector3 playerVectorProject3 = Vector3.Project(oppositeEdgeDistVec3, normalHorizontal);  
@@ -207,31 +207,32 @@ public class Pathfinding
 
                 List<Vector3> edges = new List<Vector3>()
                 {
-                     new Vector3(playerPos.x, playerPos.y) +  normalVertical * dist,
-                     new Vector3(playerPos.x, playerPos.y) - normalVertical * dist2,
-                     new Vector3(playerPos.x, playerPos.y) + normalHorizontal * dist3,
-                     new Vector3(playerPos.x, playerPos.y) - normalHorizontal * dist4
+                     new Vector3(objPos.x, objPos.y) +  normalVertical * dist,
+                     new Vector3(objPos.x, objPos.y) - normalVertical * dist2,
+                     new Vector3(objPos.x, objPos.y) + normalHorizontal * dist3,
+                     new Vector3(objPos.x, objPos.y) - normalHorizontal * dist4
                 };
 
                 float surfaceDist = float.MaxValue;
                 foreach (Vector3 edge in edges)
                 {
                     
-                    if ((playerPos - edge).magnitude < surfaceDist)
+                    if ((objPos - edge).magnitude < surfaceDist)
                     {
                         pointOnZoneSurface = edge;
-                        surfaceDist = (playerPos - edge).magnitude;
+                        surfaceDist = (objPos - edge).magnitude;
                     }
                 }
 
-                awayFromColliderCenter = (pointOnZoneSurface - playerPos).normalized;
+                awayFromColliderCenter = (pointOnZoneSurface - objPos).normalized;
             }
-            Debug.DrawLine(playerPos, pointOnZoneSurface, Color.blue);
-            while (!GetGrid().GetGridObject(playerPos).isWalkable)
+            Debug.DrawLine(objPos, pointOnZoneSurface, Color.blue);
+            while (!GetGrid().GetGridObject(objPos).isWalkable)
             {
-                playerPos += awayFromColliderCenter;
+                objPos += awayFromColliderCenter;
+
             }
-            return playerPos;
+            return objPos;
         }
         else
         {

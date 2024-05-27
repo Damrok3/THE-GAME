@@ -36,11 +36,15 @@ public class PlayerController : MonoBehaviour
     }
     private void ManagePlayerMovement()
     {
-
+        // sprawdza czy jest wciœniêty klawisz shift. Jeœli tak podwója szybkoœæ gracza i dekrementuje zmienn¹ playerStamina
+        // w przypadku gdy playerStamina jest <= 0, spowalnia gracza na pewien czas
         ManagePLayerSprint();
 
         float hAxis = Input.GetAxis("Horizontal");
         float vAxis = Input.GetAxis("Vertical");
+
+        // jeœli jest wciœniêty przycisk poruszania siê, odtwórza dŸwiêk kroku, uruchamia animacjê gracza i dodaje do
+        // obiektu gracza wektor si³y
         if(hAxis != 0 || vAxis != 0)
         {
             if (!footStepPlaying)
@@ -53,6 +57,7 @@ public class PlayerController : MonoBehaviour
             
             rb.AddForce((vVector + hVector).normalized * finalSpeed * Time.deltaTime, ForceMode2D.Force);
         }
+        // jeœli nie jest wciœniêty przycisk poruszania siê, zatrzymuje animacjê oraz odtwarzanie dŸwiêku kroków
         else
         {
             anim.SetBool("isWalking", false);
@@ -101,8 +106,9 @@ public class PlayerController : MonoBehaviour
         Quaternion rotation = Quaternion.Euler(new Vector3(0, 0, GetPlayerAngle() - 90)); ; 
         if (Input.GetKey(KeyCode.LeftShift))
         {
-            float angle = Vector3.SignedAngle(Mathf.Round(Input.GetAxis("Horizontal")) * -Vector3.right + Mathf.Round(Input.GetAxis("Vertical")) * Vector3.up, Vector3.up, Vector3.forward);
-            rotation = Quaternion.Euler(0f,0f,angle);
+            Vector3 uangle = Mathf.Round(Input.GetAxis("Horizontal")) * -Vector3.right + Mathf.Round(Input.GetAxis("Vertical")) * Vector3.up;
+            float signedangle = Vector3.SignedAngle(uangle, Vector3.up, Vector3.forward);
+            rotation = Quaternion.Euler(0f,0f,signedangle);
         }
         transform.rotation = Quaternion.Lerp(transform.rotation, rotation, Time.deltaTime * 5f);
     }
@@ -117,11 +123,22 @@ public class PlayerController : MonoBehaviour
     private void OnCollisionStay2D(Collision2D collision)
     {
         EnemyController enemy = collision.gameObject.GetComponent<EnemyController>();
+        
+        // jeœli obiekt wchodz¹cy w kolizjê z graczem ma tag "enemy", gracz nie jest nietykalny
+        // i przeciwnik powoduj¹cy kolizje nie znajduje siê w polu widzenia gracza
         if(collision.gameObject.CompareTag("enemy") && !Iframes && !enemy.isSeenByPlayer)
         {
+            // uruchom efekt wizualny otrzymania obra¿eñ
             StartCoroutine(ScreenHurtEffect());
+
+            // nadaj graczowi nietykalnoœæ na pewien czas
             StartCoroutine(PlayerIFrames());
+
+            // odepchnij gracza od przeciwnika
             PushPlayerAway(collision.transform.position, 200f);
+
+            // uruchom Event przekazuj¹c do niego tag dla zdarzenia i id przeciwnika odpowiadaj¹cy za uruchomienie funkcji
+            // odtwarzaj¹cej audio w skrypcie przeciwnika
             GameController.current.FireEvent("playerHurt", enemy.id);
         }
     }

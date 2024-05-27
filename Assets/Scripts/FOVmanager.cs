@@ -30,6 +30,10 @@ public class FOVmanager : MonoBehaviour
                 {
                     if (hit.collider.gameObject.CompareTag("enemy"))
                     {
+                        if(t.GetComponent<EnemyController>().isSeenByPlayer == false)
+                        {
+                            t.GetComponent<EnemyController>().howManyTimesSeen++;
+                        }
                         t.GetComponent<EnemyController>().isSeenByPlayer = true;
                         StopAllCoroutines();
                     }

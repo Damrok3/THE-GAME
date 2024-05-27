@@ -8,6 +8,7 @@ TagManager:
   - enemy
   - nopathzone
   - door
+  - enemyPost
   layers:
   - Default
   - TransparentFX

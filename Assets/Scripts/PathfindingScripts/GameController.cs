@@ -15,7 +15,6 @@ public class GameController : MonoBehaviour
     public static Pathfinding pathfinding;
     public static float cellSize = 5f;
     public static Vector3 playerClosestPathNodePosition;
-    public static bool isPlayerOnThePath = true;
     public static int keysCollected = 0;
 
     public TextMeshProUGUI keyScore;
@@ -50,7 +49,6 @@ public class GameController : MonoBehaviour
     private void Update()
     {
         HandleInput();
-        CheckIfPlayerOnPath();
         UpdateKeyCount();
     }
 
@@ -140,18 +138,9 @@ public class GameController : MonoBehaviour
         //}
 
     }
-    private void CheckIfPlayerOnPath()
+    public static bool CheckIfObjectOnPath(GameObject obj)
     {
-
-        if(pathfinding.GetGrid().GetGridObject(player.transform.position).isWalkable == false) 
-        {
-            isPlayerOnThePath = false;
-            playerClosestPathNodePosition = pathfinding.getNearestWalkableNodePosition(player);
-        }
-        else
-        {
-            isPlayerOnThePath = true;
-        }
+        return (pathfinding.GetGrid().GetGridObject(obj.transform.position).isWalkable != false);   
     }
     private Vector2 GetMouseWorldPosition()
     {

@@ -1,11 +1,13 @@
+using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Diagnostics;
+using System.Threading;
+using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
-
     private GameObject player;
+
     private EnemyController collidedEnemyThatIsStopped = null;
     private EnemyController collidedEnemyThatIsSeen = null;
 
@@ -15,20 +17,7 @@ public class EnemyController : MonoBehaviour
 
     private List<PathNode> path;
 
-    private RaycastHit2D raycastHit;
-
-    private Vector3 playerDirection;
-    private Vector3 direction;
-
-    private bool canSeePlayer = false;
-    private bool collidedWithWall = false;
-    private bool wallCollisionCooldown = false;
-    private bool isPathingAroundWall = false;
-    private bool wentRight = false;
-    private bool wentDown= false;
-    private bool wentLeft = false;
-    private bool wentUp = false;
-    private float slerpSpeed = 5f;
+    private Animator anim;
 
     private Stopwatch stuckAtEachOtherTimer = new Stopwatch();
     private Stopwatch stuckAtDoorTimer = new Stopwatch();
@@ -36,14 +25,36 @@ public class EnemyController : MonoBehaviour
     private Stopwatch enemyCollisionCooldown = new Stopwatch();
     private Stopwatch pathingAroundWallTimer = new Stopwatch();
 
-    private Animator anim;
+    private Thread pathfindThread;
+
+    private bool canSeePlayer = false;
+    private bool collidedWithWall = false;
+    private bool wallCollisionCooldown = false;
+    private bool isPathingAroundWall = false;
+    private bool wentRight = false;
+    private bool wentDown = false;
+    private bool wentLeft = false;
+    private bool wentUp = false;
+    private bool waitingAtPost = false;
+    private float slerpSpeed = 5f;
+
+    private GameObject[] posts;
 
     public bool isSeenByPlayer = false;
     public bool shouldStop = false;
     public bool shouldPathAroundDoor = false;
     public int id;
-
+    public int howManyTimesSeen;
+    public int howManyTimesChased;
     public float enemySpeed;
+
+    private RaycastHit2D raycastHit;
+
+    private Vector3 playerDirection;
+    private Vector3 direction;
+
+    private GameObject currentPost;
+
 
     // Start is called before the first frame update
     void Start()
@@ -51,17 +62,21 @@ public class EnemyController : MonoBehaviour
         player = GameObject.Find("player");
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        posts = GameObject.FindGameObjectsWithTag("enemyPost");
         GameController.current.GameEvent += PlayGrowl;
     }
 
     private void FixedUpdate()
     {
-        CheckIfCanSeePlayer();
+        if (howManyTimesSeen <= 2)
+        {
+            CheckIfCanSeePlayer();
+        }
     }
 
     private void PlayGrowl(object sender, GameController.EventArgs a)
     {
-        if(a.eventName == "playerHurt" && a.id == id)
+        if (a.eventName == "playerHurt" && a.id == id)
         {
             AudioSource audio = gameObject.GetComponent<AudioSource>();
             audio.PlayOneShot(audio.clip);
@@ -71,20 +86,43 @@ public class EnemyController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (shouldFindPath())
+        if (shouldPathTowardsPlayer())
         {
-            path = FindPath();
+            path = FindPath(player);
+        }
+        else if (ShouldPathToPost())
+        {
+            float minDist = float.MaxValue;
+            foreach (GameObject post in posts)
+            {
+                if(post.GetComponent<PostController>().assignedEnemyId != 0)
+                {
+                    continue;
+                }
+                else
+                {
+                    float dist = (transform.position - post.transform.position).sqrMagnitude;
+                    if(dist < minDist)
+                    {
+                        minDist = dist;
+                        currentPost = post;
+                    }
+                }
+            }
+            currentPost.GetComponent<PostController>().assignedEnemyId = id;
+            path = FindPath(currentPost);
         }
         DebugPath();
         MoveTowardsPlayer();
-        if(!isSeenByPlayer)
+        if (!isSeenByPlayer)
         {
             Rotate();
         }
         ManageCollissions();
+        ManagePosts();
         ClearTraversedPath();
 
-        
+
 
         // fov debugging
         //if (isSeenByPlayer)
@@ -110,7 +148,7 @@ public class EnemyController : MonoBehaviour
 
 
     private void ManageCollissions()
-    {   
+    {
         int layerIgnoreCollision = LayerMask.NameToLayer("ignore collision");
         int layerDefault = LayerMask.NameToLayer("Default");
         if (pathingAroundWallTimer.ElapsedMilliseconds > 1500)
@@ -122,7 +160,7 @@ public class EnemyController : MonoBehaviour
         if (stuckAtEachOtherTimer.ElapsedMilliseconds > 500)
         {
             enemyCollisionCooldown.Start();
-            gameObject.layer = layerIgnoreCollision;        
+            gameObject.layer = layerIgnoreCollision;
         }
         if (enemyCollisionCooldown.ElapsedMilliseconds > 500)
         {
@@ -145,7 +183,7 @@ public class EnemyController : MonoBehaviour
             shouldPathAroundDoor = true;
             pathingAroundDoorTimer.Start();
         }
-        if(pathingAroundDoorTimer.ElapsedMilliseconds > 1500)
+        if (pathingAroundDoorTimer.ElapsedMilliseconds > 1500)
         {
             shouldPathAroundDoor = false;
             path = null;
@@ -165,12 +203,41 @@ public class EnemyController : MonoBehaviour
         }
     }
 
-    private bool shouldFindPath()
+    private bool shouldPathTowardsPlayer()
     {
+        if (howManyTimesSeen > 2) return false;
+        if (waitingAtPost) return false;
         if (path == null && !canSeePlayer) return true;
         if (!canSeePlayer && path.Count < 2) return true;
         if (collidedWithWall) { collidedWithWall = false; return true; }
         return false;
+    }
+
+    private bool ShouldPathToPost()
+    {
+        if (howManyTimesSeen > 3) howManyTimesSeen = 0;
+        if (waitingAtPost) return false;
+        if (path == null && howManyTimesSeen > 2 && !isSeenByPlayer) return true;
+        else return false;
+
+    }
+
+    private void ManagePosts()
+    {
+        foreach (GameObject post in posts)
+        {
+            if(path != null)
+            {
+                if ((GameController.pathfinding.NodeToVector3(path[path.Count - 1]) - transform.position).magnitude < 15.0f && howManyTimesSeen > 2 && waitingAtPost == false)
+                {
+                    StartCoroutine(WaitingAtPost());
+                }
+                if (waitingAtPost)
+                {
+                    shouldStop = true;
+                }
+            }
+        }
     }
 
     private void CheckIfCanSeePlayer()
@@ -190,7 +257,7 @@ public class EnemyController : MonoBehaviour
     }
     private void MoveTowardsPlayer()
     {
-        if (canSeePlayer)
+        if (canSeePlayer && howManyTimesSeen <= 2)
         {
             direction = (player.transform.position - transform.position);
         }
@@ -203,24 +270,24 @@ public class EnemyController : MonoBehaviour
         {
             direction = Vector3.zero;
         }
-        if(shouldPathAroundDoor)
+        if (shouldPathAroundDoor)
         {
-            if(!wentRight)
+            if (!wentRight)
             {
                 direction += Vector3.right * 10;
             }
-            else if(!wentDown)
+            else if (!wentDown)
             {
                 direction += Vector3.down * 10;
             }
-            else if(!wentLeft)
+            else if (!wentLeft)
             {
                 direction += Vector3.left * 10;
             }
             else if (!wentUp)
             {
                 direction += Vector3.up * 10;
-            }  
+            }
         }
 
         UnityEngine.Debug.DrawLine(transform.position, transform.position + direction, Color.red);
@@ -231,14 +298,14 @@ public class EnemyController : MonoBehaviour
             rb.mass = 1f;
             rb.AddForce(direction.normalized * enemySpeed * Time.deltaTime, ForceMode2D.Force);
         }
-        else if(isSeenByPlayer || shouldStop)
+        else if (isSeenByPlayer || shouldStop)
         {
             anim.SetBool("isChasing", false);
             rb.velocity = Vector3.zero;
             rb.angularVelocity = 0f;
             rb.mass = 1000f;
         }
-        
+
     }
     private void DebugPath()
     {
@@ -254,7 +321,7 @@ public class EnemyController : MonoBehaviour
     }
     private void ClearTraversedPath()
     {
-        if(path != null && path.Count < 2)
+        if (path != null && path.Count < 2)
         {
             path = null;
         }
@@ -263,24 +330,24 @@ public class EnemyController : MonoBehaviour
             path.Remove(path[0]);
             path.Remove(path[0]);
         }
-        else if ( path!= null && isPathingAroundWall)
+        else if (path != null && isPathingAroundWall)
         {
             path.Remove(path[0]);
             isPathingAroundWall = false;
         }
     }
-    private List<PathNode> FindPath()
+    private List<PathNode> FindPath(GameObject obj)
     {
         grid = GameController.pathfinding.GetGrid();
         int Px, Py;
         int x, y;
-        if (GameController.isPlayerOnThePath)
+        if (GameController.CheckIfObjectOnPath(obj))
         {
-            grid.GetXY(player.transform.position, out Px, out Py);
+            grid.GetXY(obj.transform.position, out Px, out Py);
         }
         else
         {
-            grid.GetXY(GameController.playerClosestPathNodePosition, out Px, out Py);
+            grid.GetXY(GameController.pathfinding.getNearestWalkableNodePosition(obj), out Px, out Py);
         }
 
         if (!grid.GetGridObject(transform.position).isWalkable)
@@ -290,7 +357,7 @@ public class EnemyController : MonoBehaviour
         }
         else
         {
-            grid.GetXY(transform.position, out x, out y); 
+            grid.GetXY(transform.position, out x, out y);
         }
         List<PathNode> path = GameController.pathfinding.FindPath(x, y, Px, Py);
         return path;
@@ -319,9 +386,9 @@ public class EnemyController : MonoBehaviour
                 stuckAtEachOtherTimer.Start();
             }
         }
-        if(collision.gameObject.CompareTag("door"))
+        if (collision.gameObject.CompareTag("door"))
         {
-            if(!stuckAtDoorTimer.IsRunning)
+            if (!stuckAtDoorTimer.IsRunning)
             {
                 stuckAtDoorTimer.Start();
             }
@@ -351,5 +418,15 @@ public class EnemyController : MonoBehaviour
             stuckAtDoorTimer.Stop();
             stuckAtDoorTimer.Reset();
         }
+    }
+
+    IEnumerator WaitingAtPost()
+    {
+        waitingAtPost = true;
+        yield return new WaitForSeconds(5.0f);
+        howManyTimesSeen = 0;
+        shouldStop = false;
+        currentPost.GetComponent<PostController>().assignedEnemyId = 0;
+        waitingAtPost = false;
     }
 }
