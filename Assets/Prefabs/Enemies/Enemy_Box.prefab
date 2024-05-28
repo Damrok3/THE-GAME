@@ -78,7 +78,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 3
-  m_Sprite: {fileID: -865734118, guid: 960cebe1f58d9e24392cccb205c90228, type: 3}
+  m_Sprite: {fileID: 11849804, guid: 960cebe1f58d9e24392cccb205c90228, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -131,7 +131,12 @@ MonoBehaviour:
   isSeenByPlayer: 0
   shouldStop: 0
   shouldPathAroundDoor: 0
+  id: 1
+  howManyTimesSeen: 0
+  annoyanceLevel: 1
   enemySpeed: 10000
+  enemyRange: 150
+  enemyName: box
 --- !u!58 &8893673505208025270
 CircleCollider2D:
   m_ObjectHideFlags: 0

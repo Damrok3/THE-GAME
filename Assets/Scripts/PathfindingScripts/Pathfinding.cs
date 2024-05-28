@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.U2D;
 
@@ -6,6 +8,7 @@ public class Pathfinding
 {
     private const int MOVE_STRAIGHT_COST = 10;
     private const int MOVE_DIAGONAL_COST = 14;
+    private Stopwatch timer = new Stopwatch();
 
     private Grid<PathNode> grid;
 
@@ -24,6 +27,7 @@ public class Pathfinding
 
     public List<PathNode> FindPath(int startX, int startY, int endX, int endY)
     {
+        timer.Start();
         PathNode startNode = grid.GetGridObject(startX, startY);
         PathNode endNode = grid.GetGridObject(endX, endY);
 
@@ -49,10 +53,17 @@ public class Pathfinding
 
         while (openList.Count > 0)
         {
+            //if(timer.ElapsedMilliseconds > 1000)
+            //{
+            //    timer.Stop();
+            //    timer.Reset();
+            //    return null;
+            //}
             PathNode currentNode = GetLowestFCostNode(openList);
             if (currentNode == endNode)
             {
                 // Reached final Node
+                
                 return CalculatePath(endNode);
             }
             openList.Remove(currentNode);
@@ -226,7 +237,7 @@ public class Pathfinding
 
                 awayFromColliderCenter = (pointOnZoneSurface - objPos).normalized;
             }
-            Debug.DrawLine(objPos, pointOnZoneSurface, Color.blue);
+            UnityEngine.Debug.DrawLine(objPos, pointOnZoneSurface, Color.blue);
             while (!GetGrid().GetGridObject(objPos).isWalkable)
             {
                 objPos += awayFromColliderCenter;

@@ -53,7 +53,7 @@ public class FOVmanager : MonoBehaviour
 
     IEnumerator SeenByPlayerCooldown(GameObject t)
     {
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(2f);
         t.GetComponent<EnemyController>().isSeenByPlayer = false;
     }
 }

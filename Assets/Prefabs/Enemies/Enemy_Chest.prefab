@@ -131,7 +131,12 @@ MonoBehaviour:
   isSeenByPlayer: 0
   shouldStop: 0
   shouldPathAroundDoor: 0
+  id: 2
+  howManyTimesSeen: 0
+  annoyanceLevel: 1
   enemySpeed: 10000
+  enemyRange: 150
+  enemyName: chest
 --- !u!58 &120266325559483819
 CircleCollider2D:
   m_ObjectHideFlags: 0

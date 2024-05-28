@@ -25,7 +25,6 @@ public class EnemyController : MonoBehaviour
     private Stopwatch enemyCollisionCooldown = new Stopwatch();
     private Stopwatch pathingAroundWallTimer = new Stopwatch();
 
-    private Thread pathfindThread;
 
     private bool canSeePlayer = false;
     private bool collidedWithWall = false;
@@ -36,24 +35,29 @@ public class EnemyController : MonoBehaviour
     private bool wentLeft = false;
     private bool wentUp = false;
     private bool waitingAtPost = false;
+    private bool pathingToPost = false;
     private float slerpSpeed = 5f;
+    private float playerDist = 0f;
 
     private GameObject[] posts;
+    private GameObject currentPost = null;
+    private List<GameObject> visitedPosts = new List<GameObject>();
 
     public bool isSeenByPlayer = false;
     public bool shouldStop = false;
     public bool shouldPathAroundDoor = false;
     public int id;
     public int howManyTimesSeen;
-    public int howManyTimesChased;
+    public int annoyanceLevel;
     public float enemySpeed;
+    public float enemyRange;
+    public string enemyName;
 
     private RaycastHit2D raycastHit;
 
     private Vector3 playerDirection;
     private Vector3 direction;
 
-    private GameObject currentPost;
 
 
     // Start is called before the first frame update
@@ -68,59 +72,62 @@ public class EnemyController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (howManyTimesSeen <= 2)
+        if (howManyTimesSeen <= annoyanceLevel)
         {
             CheckIfCanSeePlayer();
         }
     }
 
-    private void PlayGrowl(object sender, GameController.EventArgs a)
-    {
-        if (a.eventName == "playerHurt" && a.id == id)
-        {
-            AudioSource audio = gameObject.GetComponent<AudioSource>();
-            audio.PlayOneShot(audio.clip);
-        }
-    }
 
     // Update is called once per frame
     void Update()
     {
+        playerDist = (transform.position - player.transform.position).magnitude;
         if (shouldPathTowardsPlayer())
         {
             path = FindPath(player);
         }
         else if (ShouldPathToPost())
         {
+            pathingToPost = true;
             float minDist = float.MaxValue;
-            foreach (GameObject post in posts)
+            if(currentPost == null)
             {
-                if(post.GetComponent<PostController>().assignedEnemyId != 0)
+                foreach (GameObject post in posts)
                 {
-                    continue;
-                }
-                else
-                {
-                    float dist = (transform.position - post.transform.position).sqrMagnitude;
-                    if(dist < minDist)
+                    // check if new post isn't one that already had been visited
+                    if(visitedPosts.Contains(post))
                     {
-                        minDist = dist;
-                        currentPost = post;
+                        continue;
+                    }
+                    // check if other enemy is not assigned to that post
+                    if (post.GetComponent<PostController>().assignedEnemyId != 0)
+                    { 
+                        continue;
+                    }
+                    else
+                    {
+                        float dist = (transform.position - post.transform.position).sqrMagnitude;
+                        if(dist < minDist)
+                        {
+                            minDist = dist;
+                            currentPost = post;
+                        }
                     }
                 }
+                currentPost.GetComponent<PostController>().assignedEnemyId = id;
             }
-            currentPost.GetComponent<PostController>().assignedEnemyId = id;
             path = FindPath(currentPost);
         }
         DebugPath();
-        MoveTowardsPlayer();
-        if (!isSeenByPlayer)
+        Move();
+        if (!isSeenByPlayer && !waitingAtPost)
         {
             Rotate();
         }
         ManageCollissions();
-        ManagePosts();
         ClearTraversedPath();
+        ManagePosts();
 
 
 
@@ -138,6 +145,14 @@ public class EnemyController : MonoBehaviour
         //    gameObject.GetComponent<SpriteRenderer>().color = Color.white;
         //}
 
+    }
+    private void PlayGrowl(object sender, GameController.EventArgs a)
+    {
+        if (a.eventName == "playerHurt" && a.id == id)
+        {
+            AudioSource audio = gameObject.GetComponent<AudioSource>();
+            audio.PlayOneShot(audio.clip);
+        }
     }
 
     private void Rotate()
@@ -205,38 +220,53 @@ public class EnemyController : MonoBehaviour
 
     private bool shouldPathTowardsPlayer()
     {
-        if (howManyTimesSeen > 2) return false;
+        if (howManyTimesSeen > annoyanceLevel) return false;
         if (waitingAtPost) return false;
-        if (path == null && !canSeePlayer) return true;
-        if (!canSeePlayer && path.Count < 2) return true;
+        if (!canSeePlayer && path == null)
+        {
+            if(playerDist <= enemyRange)
+            {
+                return true;
+            }
+        }
+        if (!canSeePlayer && path != null && path.Count < 2)
+        {
+            if (playerDist <= enemyRange)
+            {
+                return true;
+            }
+        }
+
         if (collidedWithWall) { collidedWithWall = false; return true; }
         return false;
     }
 
     private bool ShouldPathToPost()
     {
-        if (howManyTimesSeen > 3) howManyTimesSeen = 0;
+        if (howManyTimesSeen > annoyanceLevel + 1) howManyTimesSeen = 0;
         if (waitingAtPost) return false;
-        if (path == null && howManyTimesSeen > 2 && !isSeenByPlayer) return true;
-        else return false;
-
+        if (path == null && playerDist > enemyRange) return true;
+        if (path == null && howManyTimesSeen > annoyanceLevel && !isSeenByPlayer) return true;
+        return false;
     }
 
     private void ManagePosts()
     {
         foreach (GameObject post in posts)
         {
-            if(path != null)
+            if(pathingToPost)
             {
-                if ((GameController.pathfinding.NodeToVector3(path[path.Count - 1]) - transform.position).magnitude < 15.0f && howManyTimesSeen > 2 && waitingAtPost == false)
+                Vector3 postPos = currentPost.transform.position;
+                float dist = (postPos - transform.position).magnitude;
+                if (dist < 10f && waitingAtPost == false)
                 {
                     StartCoroutine(WaitingAtPost());
                 }
-                if (waitingAtPost)
-                {
-                    shouldStop = true;
-                }
             }
+        }
+        if(visitedPosts.Count > 2)
+        {
+            visitedPosts.RemoveAt(0);
         }
     }
 
@@ -255,9 +285,9 @@ public class EnemyController : MonoBehaviour
             canSeePlayer = false;
         }
     }
-    private void MoveTowardsPlayer()
+    private void Move()
     {
-        if (canSeePlayer && howManyTimesSeen <= 2)
+        if (canSeePlayer && howManyTimesSeen <= annoyanceLevel && playerDist <= enemyRange)
         {
             direction = (player.transform.position - transform.position);
         }
@@ -321,16 +351,32 @@ public class EnemyController : MonoBehaviour
     }
     private void ClearTraversedPath()
     {
+        float dist = float.MaxValue;
         if (path != null && path.Count < 2)
         {
             path = null;
         }
-        if (path != null && (GameController.pathfinding.NodeToVector3(path[1]) - transform.position).magnitude < 3.6f)
+        if(path != null)
         {
-            path.Remove(path[0]);
-            path.Remove(path[0]);
+            dist = (GameController.pathfinding.NodeToVector3(path[1]) - transform.position).magnitude;
         }
-        else if (path != null && isPathingAroundWall)
+        if(enemyName == "box")
+        {
+            if (path != null && dist < 7f)
+            {
+                path.Remove(path[0]);
+                path.Remove(path[0]);
+            }
+        }
+        else
+        {
+            if (path != null && dist < 4.5f)
+            {
+                path.Remove(path[0]);
+                path.Remove(path[0]);
+            }
+        }
+        if (path != null && isPathingAroundWall)
         {
             path.Remove(path[0]);
             isPathingAroundWall = false;
@@ -422,11 +468,23 @@ public class EnemyController : MonoBehaviour
 
     IEnumerator WaitingAtPost()
     {
+        PostController currentPostController = currentPost.GetComponent<PostController>();
+        transform.position = currentPostController.transform.position;
+        transform.rotation = currentPostController.transform.rotation;
         waitingAtPost = true;
-        yield return new WaitForSeconds(5.0f);
+        shouldStop = true;
+     
+        yield return new WaitForSeconds(10.0f);
+
+        currentPostController.assignedEnemyId = 0;
+        if(visitedPosts.Contains(currentPost) == false)
+        {
+            visitedPosts.Add(currentPost);
+        }
+        currentPost = null;
         howManyTimesSeen = 0;
         shouldStop = false;
-        currentPost.GetComponent<PostController>().assignedEnemyId = 0;
         waitingAtPost = false;
+        pathingToPost = false;
     }
 }
