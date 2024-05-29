@@ -27,7 +27,6 @@ public class Pathfinding
 
     public List<PathNode> FindPath(int startX, int startY, int endX, int endY)
     {
-        timer.Start();
         PathNode startNode = grid.GetGridObject(startX, startY);
         PathNode endNode = grid.GetGridObject(endX, endY);
 
@@ -53,12 +52,6 @@ public class Pathfinding
 
         while (openList.Count > 0)
         {
-            //if(timer.ElapsedMilliseconds > 1000)
-            //{
-            //    timer.Stop();
-            //    timer.Reset();
-            //    return null;
-            //}
             PathNode currentNode = GetLowestFCostNode(openList);
             if (currentNode == endNode)
             {
@@ -324,6 +317,7 @@ public class Pathfinding
 
     private PathNode GetLowestFCostNode(List<PathNode> pathNodeList)
     {
+
         PathNode lowestFCostNode = pathNodeList[0];
         for (int i = 1; i < pathNodeList.Count; i++)
         {

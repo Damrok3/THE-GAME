@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -105,6 +106,10 @@ public class EnemyController : MonoBehaviour
                     { 
                         continue;
                     }
+                    if (post.GetComponent<PostController>().isSeenByPlayer)
+                    {
+                        continue;
+                    }
                     else
                     {
                         float dist = (transform.position - post.transform.position).sqrMagnitude;
@@ -117,7 +122,15 @@ public class EnemyController : MonoBehaviour
                 }
                 currentPost.GetComponent<PostController>().assignedEnemyId = id;
             }
-            path = FindPath(currentPost);
+            if(howManyTimesSeen > annoyanceLevel && !isSeenByPlayer && playerDist > 15f)
+            {
+                transform.position = currentPost.transform.position;
+                transform.rotation = currentPost.transform.rotation;
+            }
+            else
+            {
+                path = FindPath(currentPost);
+            }
         }
         DebugPath();
         Move();
@@ -128,22 +141,6 @@ public class EnemyController : MonoBehaviour
         ManageCollissions();
         ClearTraversedPath();
         ManagePosts();
-
-
-
-        // fov debugging
-        //if (isSeenByPlayer)
-        //{
-        //    gameObject.GetComponent<SpriteRenderer>().color = Color.blue;
-        //}
-        //if (!isSeenByPlayer && shouldStop)
-        //{
-        //    gameObject.GetComponent<SpriteRenderer>().color = Color.red;
-        //}
-        //if(!isSeenByPlayer && !shouldStop)
-        //{
-        //    gameObject.GetComponent<SpriteRenderer>().color = Color.white;
-        //}
 
     }
     private void PlayGrowl(object sender, GameController.EventArgs a)
