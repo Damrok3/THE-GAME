@@ -5,4 +5,5 @@ using UnityEngine;
 public class PostController : MonoBehaviour
 {
     public int assignedEnemyId;
+    public bool isSeenByPlayer;
 }

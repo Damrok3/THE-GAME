@@ -8,10 +8,10 @@ public class MenuController : MonoBehaviour
 {
     public void ChangeScene()
     {
+        Time.timeScale = 1f;
         if (SceneManager.GetSceneByName("MenuInGame").IsValid())
         {
             SceneManager.UnloadSceneAsync("MenuInGame");
-            Time.timeScale = 1f;
             AudioSource[] audios = FindObjectsOfType<AudioSource>();
             foreach (AudioSource audio in audios)
             {

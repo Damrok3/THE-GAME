@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
     public float speed;
     public float playerStamina;
+    public int playerHealth = 3;
     private float finalSpeed;
     public List<AudioClip> clips;
     private AudioSource audioSrc;
@@ -18,6 +20,7 @@ public class PlayerController : MonoBehaviour
     private Stopwatch sprintCooldown = new Stopwatch();
     private bool Iframes = false;
     public Slider staminaBar;
+    public List<GameObject> healthbar;
     public Volume globalVolume;
 
     void Start()
@@ -25,6 +28,7 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();  
         anim = GetComponent<Animator>();
         audioSrc = GetComponent<AudioSource>();
+        GameController.current.GameEvent += TakePLayerHealthPoint;
     }
     void LateUpdate()
     {
@@ -32,7 +36,48 @@ public class PlayerController : MonoBehaviour
     }
     void Update()
     {
-        ManagePlayerMovement();   
+        ManagePlayerMovement();
+        MangagePlayerHealth();
+    }
+
+    private void MangagePlayerHealth()
+    {
+        switch (playerHealth)
+        {
+            case 3:
+                break;
+            case 2:
+                healthbar[2].SetActive(false); 
+                break;
+            case 1:
+                healthbar[1].SetActive(false); 
+                break;
+            case 0:
+                healthbar[0].SetActive(false);
+                break;
+            default:
+                if (!SceneManager.GetSceneByName("GameOver").IsValid())
+                {
+                    Time.timeScale = 0f;
+                    AudioSource[] audios = FindObjectsOfType<AudioSource>();
+                    foreach (AudioSource audio in audios)
+                    {
+                        audio.Pause();
+                    }
+                    SceneManager.LoadScene("GameOver", LoadSceneMode.Additive);
+                }
+                break;
+
+        }
+    }
+
+    private void TakePLayerHealthPoint(object sender, GameController.EventArgs e)
+    {
+        if(e.eventName == "playerHurt")
+        {
+            playerHealth --;
+            Mathf.Clamp(playerHealth, -1, 3);
+        }
     }
     private void ManagePlayerMovement()
     {

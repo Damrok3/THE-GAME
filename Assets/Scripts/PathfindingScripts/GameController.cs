@@ -17,8 +17,6 @@ public class GameController : MonoBehaviour
     public static Vector3 playerClosestPathNodePosition;
     public static int keysCollected = 0;
 
-    public float timeScale = 1f;
-
     public TextMeshProUGUI keyScore;
 
     //.net standard for declaring an event handler that can take class object and store its data as well as trigger certain things
@@ -50,7 +48,6 @@ public class GameController : MonoBehaviour
     }
     private void Update()
     {
-        Time.timeScale = timeScale;
         HandleInput();
         UpdateKeyCount();
     }
@@ -95,7 +92,6 @@ public class GameController : MonoBehaviour
                 AudioSource[] audios = FindObjectsOfType<AudioSource>();
                 foreach(AudioSource audio in audios)
                 {
-                    Debug.Log(audio.ToString());
                     audio.Pause();
                 }
                 Time.timeScale = 0f;
