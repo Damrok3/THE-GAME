@@ -10,7 +10,7 @@ public class PlayerController : MonoBehaviour
 {
     public float speed;
     public float playerStamina;
-    public int playerHealth = 3;
+    public int playerHealth = 2;
     private float finalSpeed;
     public List<AudioClip> clips;
     private AudioSource audioSrc;
@@ -22,7 +22,7 @@ public class PlayerController : MonoBehaviour
     public Slider staminaBar;
     public List<GameObject> healthbar;
     public Volume globalVolume;
-
+    private bool delay = false;
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();  
@@ -44,31 +44,42 @@ public class PlayerController : MonoBehaviour
     {
         switch (playerHealth)
         {
-            case 3:
-                break;
             case 2:
-                healthbar[2].SetActive(false); 
                 break;
             case 1:
-                healthbar[1].SetActive(false); 
+                healthbar[2].SetActive(false); 
                 break;
             case 0:
-                healthbar[0].SetActive(false);
+                healthbar[1].SetActive(false); 
                 break;
             default:
+                healthbar[0].SetActive(false);
                 if (!SceneManager.GetSceneByName("GameOver").IsValid())
                 {
                     Time.timeScale = 0f;
-                    AudioSource[] audios = FindObjectsOfType<AudioSource>();
-                    foreach (AudioSource audio in audios)
+                    if(!delay)
                     {
-                        audio.Pause();
+                        StartCoroutine(Delay());
                     }
                     SceneManager.LoadScene("GameOver", LoadSceneMode.Additive);
                 }
                 break;
 
         }
+    }
+
+    IEnumerator Delay()
+    {
+        delay = true;
+        // WaitForSecondsRealtime instead of just waitForSeconds because previously using Time.timescale messes with waitforseconds
+        yield return new WaitForSecondsRealtime(4f);
+        AudioSource[] audios = FindObjectsOfType<AudioSource>();
+
+        foreach (AudioSource audio in audios)
+        {
+            audio.Pause();
+        }
+        delay = false;
     }
 
     private void TakePLayerHealthPoint(object sender, GameController.EventArgs e)
@@ -81,15 +92,10 @@ public class PlayerController : MonoBehaviour
     }
     private void ManagePlayerMovement()
     {
-        // sprawdza czy jest wciœniêty klawisz shift. Jeœli tak podwója szybkoœæ gracza i dekrementuje zmienn¹ playerStamina
-        // w przypadku gdy playerStamina jest <= 0, spowalnia gracza na pewien czas
         ManagePLayerSprint();
 
         float hAxis = Input.GetAxis("Horizontal");
         float vAxis = Input.GetAxis("Vertical");
-
-        // jeœli jest wciœniêty przycisk poruszania siê, odtwórza dŸwiêk kroku, uruchamia animacjê gracza i dodaje do
-        // obiektu gracza wektor si³y
         if(hAxis != 0 || vAxis != 0)
         {
             if (!footStepPlaying)
@@ -102,7 +108,6 @@ public class PlayerController : MonoBehaviour
             
             rb.AddForce((vVector + hVector).normalized * finalSpeed * Time.deltaTime, ForceMode2D.Force);
         }
-        // jeœli nie jest wciœniêty przycisk poruszania siê, zatrzymuje animacjê oraz odtwarzanie dŸwiêku kroków
         else
         {
             anim.SetBool("isWalking", false);
@@ -169,21 +174,11 @@ public class PlayerController : MonoBehaviour
     {
         EnemyController enemy = collision.gameObject.GetComponent<EnemyController>();
         
-        // jeœli obiekt wchodz¹cy w kolizjê z graczem ma tag "enemy", gracz nie jest nietykalny
-        // i przeciwnik powoduj¹cy kolizje nie znajduje siê w polu widzenia gracza
         if(collision.gameObject.CompareTag("enemy") && !Iframes && !enemy.isSeenByPlayer)
         {
-            // uruchom efekt wizualny otrzymania obra¿eñ
             StartCoroutine(ScreenHurtEffect());
-
-            // nadaj graczowi nietykalnoœæ na pewien czas
             StartCoroutine(PlayerIFrames());
-
-            // odepchnij gracza od przeciwnika
             PushPlayerAway(collision.transform.position, 200f);
-
-            // uruchom Event przekazuj¹c do niego tag dla zdarzenia i id przeciwnika odpowiadaj¹cy za uruchomienie funkcji
-            // odtwarzaj¹cej audio w skrypcie przeciwnika
             GameController.current.FireEvent("playerHurt", enemy.id);
         }
     }
@@ -202,7 +197,7 @@ public class PlayerController : MonoBehaviour
     }
     IEnumerator PlayerIFrames()
     {
-        int blinks = 20;
+        int blinks = 40;
         Iframes = true;
         SpriteRenderer renderer = gameObject.GetComponent<SpriteRenderer>();
         while (blinks >= 0)

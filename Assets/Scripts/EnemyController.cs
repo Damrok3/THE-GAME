@@ -1,8 +1,6 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
 using UnityEngine;
 
 public class EnemyController : MonoBehaviour
@@ -36,13 +34,17 @@ public class EnemyController : MonoBehaviour
     private bool wentLeft = false;
     private bool wentUp = false;
     private bool waitingAtPost = false;
-    private bool pathingToPost = false;
     private float slerpSpeed = 5f;
     private float playerDist = 0f;
 
     private GameObject[] posts;
     private GameObject currentPost = null;
     private List<GameObject> visitedPosts = new List<GameObject>();
+
+    private RaycastHit2D raycastHit;
+
+    private Vector3 playerDirection;
+    private Vector3 direction;
 
     public bool isSeenByPlayer = false;
     public bool shouldStop = false;
@@ -54,10 +56,6 @@ public class EnemyController : MonoBehaviour
     public float enemyRange;
     public string enemyName;
 
-    private RaycastHit2D raycastHit;
-
-    private Vector3 playerDirection;
-    private Vector3 direction;
 
 
 
@@ -88,49 +86,9 @@ public class EnemyController : MonoBehaviour
         {
             path = FindPath(player);
         }
-        else if (ShouldPathToPost())
+        else if (ShouldGoToPost())
         {
-            pathingToPost = true;
-            float minDist = float.MaxValue;
-            if(currentPost == null)
-            {
-                foreach (GameObject post in posts)
-                {
-                    // check if new post isn't one that already had been visited
-                    if(visitedPosts.Contains(post))
-                    {
-                        continue;
-                    }
-                    // check if other enemy is not assigned to that post
-                    if (post.GetComponent<PostController>().assignedEnemyId != 0)
-                    { 
-                        continue;
-                    }
-                    if (post.GetComponent<PostController>().isSeenByPlayer)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        float dist = (transform.position - post.transform.position).sqrMagnitude;
-                        if(dist < minDist)
-                        {
-                            minDist = dist;
-                            currentPost = post;
-                        }
-                    }
-                }
-                currentPost.GetComponent<PostController>().assignedEnemyId = id;
-            }
-            if(howManyTimesSeen > annoyanceLevel && !isSeenByPlayer && playerDist > 15f)
-            {
-                transform.position = currentPost.transform.position;
-                transform.rotation = currentPost.transform.rotation;
-            }
-            else
-            {
-                path = FindPath(currentPost);
-            }
+            ManagePosts();
         }
         DebugPath();
         Move();
@@ -140,7 +98,6 @@ public class EnemyController : MonoBehaviour
         }
         ManageCollissions();
         ClearTraversedPath();
-        ManagePosts();
 
     }
     private void PlayGrowl(object sender, GameController.EventArgs a)
@@ -238,7 +195,7 @@ public class EnemyController : MonoBehaviour
         return false;
     }
 
-    private bool ShouldPathToPost()
+    private bool ShouldGoToPost()
     {
         if (howManyTimesSeen > annoyanceLevel + 1) howManyTimesSeen = 0;
         if (waitingAtPost) return false;
@@ -249,18 +206,55 @@ public class EnemyController : MonoBehaviour
 
     private void ManagePosts()
     {
-        foreach (GameObject post in posts)
+        float minDist = float.MaxValue;
+        if (currentPost == null)
         {
-            if(pathingToPost)
+            foreach (GameObject post in posts)
             {
-                Vector3 postPos = currentPost.transform.position;
-                float dist = (postPos - transform.position).magnitude;
-                if (dist < 10f && waitingAtPost == false)
+                // check if new post isn't one that already had been visited
+                if (visitedPosts.Contains(post))
                 {
-                    StartCoroutine(WaitingAtPost());
+                    continue;
+                }
+                // check if other enemy is not assigned to that post
+                if (post.GetComponent<PostController>().assignedEnemyId != 0)
+                {
+                    continue;
+                }
+                if (post.GetComponent<PostController>().isSeenByPlayer)
+                {
+                    continue;
+                }
+                else
+                {
+                    float dist = (transform.position - post.transform.position).sqrMagnitude;
+                    if (dist < minDist)
+                    {
+                        minDist = dist;
+                        currentPost = post;
+                    }
                 }
             }
+            currentPost.GetComponent<PostController>().assignedEnemyId = id;
         }
+        if (howManyTimesSeen > annoyanceLevel || !isSeenByPlayer && playerDist > 15f)
+        {
+            transform.position = currentPost.transform.position;
+            transform.rotation = currentPost.transform.rotation;
+        }
+
+        foreach (GameObject post in posts)
+        {
+            
+            Vector3 postPos = currentPost.transform.position;
+            float dist = (postPos - transform.position).magnitude;
+            if (dist < 10f && waitingAtPost == false)
+            {
+                StartCoroutine(WaitingAtPost());
+            }
+            
+        }
+
         if(visitedPosts.Count > 2)
         {
             visitedPosts.RemoveAt(0);
@@ -482,6 +476,5 @@ public class EnemyController : MonoBehaviour
         howManyTimesSeen = 0;
         shouldStop = false;
         waitingAtPost = false;
-        pathingToPost = false;
     }
 }
