@@ -5,25 +5,15 @@ using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
-    private GameObject player;
-
-    private EnemyController collidedEnemyThatIsStopped = null;
-    private EnemyController collidedEnemyThatIsSeen = null;
-
-    private Rigidbody2D rb;
-
-    private Grid<PathNode> grid;
-
-    private List<PathNode> path;
-
-    private Animator anim;
-
-    private Stopwatch stuckAtEachOtherTimer = new Stopwatch();
-    private Stopwatch stuckAtDoorTimer = new Stopwatch();
-    private Stopwatch pathingAroundDoorTimer = new Stopwatch();
-    private Stopwatch enemyCollisionCooldown = new Stopwatch();
-    private Stopwatch pathingAroundWallTimer = new Stopwatch();
-
+    public bool isSeenByPlayer = false;
+    public bool shouldStop = false;
+    public bool shouldPathAroundDoor = false;
+    public int id;
+    public int howManyTimesSeen;
+    public int annoyanceLevel;
+    public float enemySpeed;
+    public float enemyRange;
+    public string enemyName;
 
     private bool canSeePlayer = false;
     private bool collidedWithWall = false;
@@ -36,28 +26,25 @@ public class EnemyController : MonoBehaviour
     private bool waitingAtPost = false;
     private float slerpSpeed = 5f;
     private float playerDist = 0f;
-
-    private GameObject[] posts;
-    private GameObject currentPost = null;
-    private List<GameObject> visitedPosts = new List<GameObject>();
-
     private RaycastHit2D raycastHit;
-
     private Vector3 playerDirection;
     private Vector3 direction;
 
-    public bool isSeenByPlayer = false;
-    public bool shouldStop = false;
-    public bool shouldPathAroundDoor = false;
-    public int id;
-    public int howManyTimesSeen;
-    public int annoyanceLevel;
-    public float enemySpeed;
-    public float enemyRange;
-    public string enemyName;
-
-
-
+    private GameObject player;
+    private List<GameObject> posts = new List<GameObject>();
+    private List<GameObject> visitedPosts = new List<GameObject>();
+    private List<PathNode> path;
+    private Grid<PathNode> grid;
+    private GameObject currentPost = null;
+    private EnemyController collidedEnemyThatIsStopped = null;
+    private EnemyController collidedEnemyThatIsSeen = null;
+    private Rigidbody2D rb;
+    private Animator anim;
+    private Stopwatch stuckAtEachOtherTimer = new Stopwatch();
+    private Stopwatch stuckAtDoorTimer = new Stopwatch();
+    private Stopwatch pathingAroundDoorTimer = new Stopwatch();
+    private Stopwatch enemyCollisionCooldown = new Stopwatch();
+    private Stopwatch pathingAroundWallTimer = new Stopwatch();
 
     // Start is called before the first frame update
     void Start()
@@ -65,7 +52,7 @@ public class EnemyController : MonoBehaviour
         player = GameObject.Find("player");
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
-        posts = GameObject.FindGameObjectsWithTag("enemyPost");
+        posts.AddRange(GameObject.FindGameObjectsWithTag("enemyPost"));
         GameController.current.GameEvent += PlayGrowl;
     }
 

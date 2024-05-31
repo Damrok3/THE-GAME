@@ -3,8 +3,6 @@ using UnityEngine;
 
 public class Grid<TGridObject>
 {
-    public const int HEAT_MAP_MAX_VALUE = 100;
-    public const int HEAT_MAP_MIN_VALUE = 0;
 
     private int width;
     private int height;
@@ -37,7 +35,6 @@ public class Grid<TGridObject>
 
         if (showDebugGrid)
         {
-
             debugTextArray = new TextMesh[width, height];
             for (int x = 0; x < gridArray.GetLength(0); x++)
             {

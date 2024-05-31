@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -18,13 +17,12 @@ public class doorTrigger : MonoBehaviour
     {
         if(!crON)
         {
-            StartCoroutine(TextFollowPlayer(5f));
+            StartCoroutine(PlayerText(5f));
             doorDialogue.SetActive(true);
-            Debug.Log("fired");
         }
     }
 
-    IEnumerator TextFollowPlayer(float time)
+    IEnumerator PlayerText(float time)
     {
         switch(GameController.keysCollected)
         {

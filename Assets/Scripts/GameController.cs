@@ -7,7 +7,6 @@ using UnityEngine.SceneManagement;
 public class GameController : MonoBehaviour
 {
     [SerializeField] private GameObject player; 
-    [SerializeField] private HeatMapGenericVisual heatMap;
     private GameObject [] noPathZoneList;
 
     // reference to the GameController class letting me to access the events outside of this script
@@ -22,7 +21,7 @@ public class GameController : MonoBehaviour
     //.net standard for declaring an event handler that can take class object and store its data as well as trigger certain things
     public event EventHandler<EventArgs> GameEvent;
 
-    //declaration of a class that objects of can be passed inside of the event
+    //declaration of a class allowing data to be passed inside of the event
     public class EventArgs : System.EventArgs
     {
         public int x;
@@ -43,7 +42,6 @@ public class GameController : MonoBehaviour
         noPathZoneList = GameObject.FindGameObjectsWithTag("nopathzone");
         pathfinding.InitializePathBoundaries(noPathZoneList);
         //TestPathfinding(pathfinding.GetGrid());
-        heatMap.SetGrid(pathfinding.GetGrid());
         GameEvent?.Invoke(this, new EventArgs { });
         keysCollected = 0;
     }

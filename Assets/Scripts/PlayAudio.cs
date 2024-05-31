@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayAudio : MonoBehaviour
 {
-    public List<AudioClip> audio;
+    public List<AudioClip> audioClip;
     private AudioSource audioSource;
     private void Start()
     {
@@ -17,7 +17,7 @@ public class PlayAudio : MonoBehaviour
         switch(e.eventName)
         {
             case "keyPicked":
-                audioSource.PlayOneShot(audio[0]);
+                audioSource.PlayOneShot(audioClip[0]);
                 break;
             default:
                 break;

@@ -11,31 +11,36 @@ public class PlayerController : MonoBehaviour
     public float speed;
     public float playerStamina;
     public int playerHealth = 2;
-    private float finalSpeed;
     public List<AudioClip> clips;
+    public List<GameObject> healthbar;
+    public Slider staminaBar;
+    public Volume globalVolume;
+
+    private float finalSpeed;
+    private bool footStepPlaying = false;
+    private bool Iframes = false;
+    private bool delay = false;
     private AudioSource audioSrc;
     private Animator anim;
     private Rigidbody2D rb;
-    private bool footStepPlaying = false;
     private Stopwatch sprintCooldown = new Stopwatch();
-    private bool Iframes = false;
-    public Slider staminaBar;
-    public List<GameObject> healthbar;
-    public Volume globalVolume;
-    private bool delay = false;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();  
         anim = GetComponent<Animator>();
         audioSrc = GetComponent<AudioSource>();
-        GameController.current.GameEvent += TakePLayerHealthPoint;
+        GameController.current.GameEvent += TakePlayerHealthPoint;
     }
+
     void LateUpdate()
     {
         ManagePlayerLookDirection();
     }
+
     void Update()
     {
+        ManagePlayerSprint();
         ManagePlayerMovement();
         MangagePlayerHealth();
     }
@@ -59,7 +64,7 @@ public class PlayerController : MonoBehaviour
                     Time.timeScale = 0f;
                     if(!delay)
                     {
-                        StartCoroutine(Delay());
+                        StartCoroutine(PauseAudioAfterDelay());
                     }
                     SceneManager.LoadScene("GameOver", LoadSceneMode.Additive);
                 }
@@ -68,21 +73,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    IEnumerator Delay()
-    {
-        delay = true;
-        // WaitForSecondsRealtime instead of just waitForSeconds because previously using Time.timescale messes with waitforseconds
-        yield return new WaitForSecondsRealtime(4f);
-        AudioSource[] audios = FindObjectsOfType<AudioSource>();
-
-        foreach (AudioSource audio in audios)
-        {
-            audio.Pause();
-        }
-        delay = false;
-    }
-
-    private void TakePLayerHealthPoint(object sender, GameController.EventArgs e)
+    private void TakePlayerHealthPoint(object sender, GameController.EventArgs e)
     {
         if(e.eventName == "playerHurt")
         {
@@ -90,13 +81,13 @@ public class PlayerController : MonoBehaviour
             Mathf.Clamp(playerHealth, -1, 3);
         }
     }
+
     private void ManagePlayerMovement()
-    {
-        ManagePLayerSprint();
+    { 
 
         float hAxis = Input.GetAxis("Horizontal");
         float vAxis = Input.GetAxis("Vertical");
-        if(hAxis != 0 || vAxis != 0)
+        if (hAxis != 0 || vAxis != 0)
         {
             if (!footStepPlaying)
             {
@@ -105,7 +96,7 @@ public class PlayerController : MonoBehaviour
             anim.SetBool("isWalking", true);
             Vector2 vVector = Vector2.up * vAxis;
             Vector2 hVector = Vector2.right * hAxis;
-            
+
             rb.AddForce((vVector + hVector).normalized * finalSpeed * Time.deltaTime, ForceMode2D.Force);
         }
         else
@@ -114,7 +105,8 @@ public class PlayerController : MonoBehaviour
             audioSrc.Stop();
         }
     }
-    private void ManagePLayerSprint()
+
+    private void ManagePlayerSprint()
     {
         if (Input.GetKey(KeyCode.LeftShift) && !sprintCooldown.IsRunning)
         {
@@ -150,6 +142,7 @@ public class PlayerController : MonoBehaviour
             sprintCooldown.Reset();
         }
     }
+   
     private void ManagePlayerLookDirection()
     {
         rb.angularVelocity = 0f;
@@ -162,6 +155,7 @@ public class PlayerController : MonoBehaviour
         }
         transform.rotation = Quaternion.Lerp(transform.rotation, rotation, Time.deltaTime * 5f);
     }
+
     private float GetPlayerAngle()
     {
         Vector2 mousePos = MyFunctions.GetMouseWorldPosition();
@@ -170,6 +164,13 @@ public class PlayerController : MonoBehaviour
         float angleInRadians = Mathf.Atan2(directionVec.y, directionVec.x);
         return angleInRadians * Mathf.Rad2Deg;
     }
+
+    private void PushPlayerAway(Vector3 pushDir, float force)
+    {
+        Vector3 dir = (transform.position - pushDir).normalized;
+        rb.AddForce(dir * force, ForceMode2D.Impulse);
+    }
+
     private void OnCollisionStay2D(Collision2D collision)
     {
         EnemyController enemy = collision.gameObject.GetComponent<EnemyController>();
@@ -182,11 +183,21 @@ public class PlayerController : MonoBehaviour
             GameController.current.FireEvent("playerHurt", enemy.id);
         }
     }
-    private void PushPlayerAway(Vector3 pushDir, float force)
+
+    IEnumerator PauseAudioAfterDelay()
     {
-        Vector3 dir = (transform.position - pushDir).normalized;
-        rb.AddForce(dir * force, ForceMode2D.Impulse);
+        delay = true;
+        // WaitForSecondsRealtime instead of just waitForSeconds because previously using Time.timescale messes with waitforseconds
+        yield return new WaitForSecondsRealtime(4f);
+        AudioSource[] audios = FindObjectsOfType<AudioSource>();
+
+        foreach (AudioSource audio in audios)
+        {
+            audio.Pause();
+        }
+        delay = false;
     }
+
     IEnumerator PlayFootStep()
     {
         footStepPlaying = true;

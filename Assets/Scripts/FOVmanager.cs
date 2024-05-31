@@ -5,15 +5,13 @@ using UnityEngine;
 public class FOVmanager : MonoBehaviour
 {
     public float fovAngle = 90f;
-
-    public Transform fovPoint;
-    private List<GameObject> targets = new List<GameObject>();
-
     public float range = 8f;
-    private bool crCooldown = false;
+    public Transform fovPoint;
+
+    private List<GameObject> targets = new List<GameObject>();
+    private Dictionary<GameObject, Coroutine> cooldownCoroutines = new Dictionary<GameObject, Coroutine>();
     private RaycastHit2D hit;
 
-    private Dictionary<GameObject, Coroutine> cooldownCoroutines = new Dictionary<GameObject, Coroutine>();
     private void Start()
     {
         targets.AddRange(GameObject.FindGameObjectsWithTag("enemy"));

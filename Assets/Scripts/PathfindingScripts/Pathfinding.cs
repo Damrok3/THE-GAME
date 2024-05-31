@@ -19,7 +19,7 @@ public class Pathfinding
 
     public Pathfinding(int width, int height, float cellSize)
     {
-        grid = new Grid<PathNode>(width, height, cellSize, Vector3.zero, (Grid<PathNode> global, int x, int y) => new PathNode(grid, x, y));
+        grid = new Grid<PathNode>(width, height, cellSize, Vector3.zero, (Grid<PathNode> g, int x, int y) => new PathNode(x, y));
     }
 
     public Grid<PathNode> GetGrid() { return grid; }
