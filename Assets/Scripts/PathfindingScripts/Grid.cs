@@ -9,13 +9,8 @@ public class Grid<TGridObject>
     private float cellSize;
     private Vector3 originPosition;
     private TGridObject[,] gridArray;
-    private TextMesh[,] debugTextArray;
 
-    private int debugTextSize = 10;
-    bool showDebugGrid = false;
-    bool showDebugText = false;
-
-    public Grid(int width, int height, float cellSize, Vector3 originPosition, Func<Grid<TGridObject>, int, int, TGridObject> createGridObject)
+    public Grid(int width, int height, float cellSize, Vector3 originPosition, Func<int, int, TGridObject> createGridObject)
     {
         this.width = width;
         this.height = height;
@@ -29,36 +24,7 @@ public class Grid<TGridObject>
             for (int y = 0; y < gridArray.GetLength(1); y++)
             {
                 //here a lambda function is called that sets the default for each field, we're passing it by using Func in constructor which is like a delegate with the difference that it can return things
-                gridArray[x, y] = createGridObject(this, x, y);
-            }
-        }
-
-        if (showDebugGrid)
-        {
-            debugTextArray = new TextMesh[width, height];
-            for (int x = 0; x < gridArray.GetLength(0); x++)
-            {
-                for (int y = 0; y < gridArray.GetLength(1); y++)
-                {
-                    if (showDebugText)
-                    {
-                        debugTextArray[x, y] = CreateWorldText(null, gridArray[x, y]?.ToString(), GetWorldPosition(x, y) + new Vector3(cellSize, cellSize) * 0.5f, debugTextSize, Color.white, TextAnchor.MiddleCenter, TextAlignment.Center, 1);
-                    }
-                    Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x, y + 1), Color.white, 100f);
-                    Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x + 1, y), Color.white, 100f);
-                }
-
-            }
-            Debug.DrawLine(GetWorldPosition(0, height), GetWorldPosition(width, height), Color.white, 100f);
-            Debug.DrawLine(GetWorldPosition(width, 0), GetWorldPosition(width, height), Color.white, 100f);
-
-            //lambda expression that changes the value of debug text array subscribed to the event
-            if (showDebugText)
-            {
-                GameController.current.GameEvent += (object sender, GameController.EventArgs eventArgs) => 
-                {
-                    debugTextArray[eventArgs.x, eventArgs.y].text = gridArray[eventArgs.x, eventArgs.y]?.ToString();
-                };
+                gridArray[x, y] = createGridObject(x, y);
             }
         }
     }
@@ -112,20 +78,5 @@ public class Grid<TGridObject>
     public Vector3 GetWorldPosition(int x, int y)
     {
         return new Vector3(x, y) * cellSize + originPosition;
-    }
-    public static TextMesh CreateWorldText(Transform parent, string text, Vector3 localPosition, int fontSize, Color color, TextAnchor textAnchor, TextAlignment textAlignment, int sortingOrder)
-    {
-        GameObject gameObject = new GameObject("World_Text", typeof(TextMesh));
-        Transform transform = gameObject.transform;
-        transform.SetParent(parent, false);
-        transform.localPosition = localPosition;
-        TextMesh textMesh = gameObject.GetComponent<TextMesh>();
-        textMesh.anchor = textAnchor;
-        textMesh.alignment = textAlignment;
-        textMesh.text = text;
-        textMesh.fontSize = fontSize;
-        textMesh.color = color;
-        textMesh.GetComponent<MeshRenderer>().sortingOrder = sortingOrder;
-        return textMesh;
     }
 }

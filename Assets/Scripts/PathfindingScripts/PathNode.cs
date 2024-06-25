@@ -23,9 +23,5 @@ public class PathNode
     {
         fCost = gCost + hCost;
     }
-    public override string ToString()
-    {
-        return x + "," + y;
-    }
 
 }

@@ -7,13 +7,12 @@ using UnityEngine.SceneManagement;
 public class GameController : MonoBehaviour
 {
     [SerializeField] private GameObject player; 
-    private GameObject [] noPathZoneList;
+    private GameObject [] noPathZoneArray;
 
     // reference to the GameController class letting me to access the events outside of this script
     public static GameController current;
     public static Pathfinding pathfinding;
     public static float cellSize = 5f;
-    public static Vector3 playerClosestPathNodePosition;
     public static int keysCollected = 0;
 
     public TextMeshProUGUI keyScore;
@@ -24,8 +23,6 @@ public class GameController : MonoBehaviour
     //declaration of a class allowing data to be passed inside of the event
     public class EventArgs : System.EventArgs
     {
-        public int x;
-        public int y;
         public string eventName;
         public int id;
     }
@@ -39,10 +36,9 @@ public class GameController : MonoBehaviour
     {
         //300 269
         pathfinding = new Pathfinding(300, 269, cellSize);
-        noPathZoneList = GameObject.FindGameObjectsWithTag("nopathzone");
-        pathfinding.InitializePathBoundaries(noPathZoneList);
+        noPathZoneArray = GameObject.FindGameObjectsWithTag("nopathzone");
+        pathfinding.InitializePathBoundaries(noPathZoneArray);
         //TestPathfinding(pathfinding.GetGrid());
-        GameEvent?.Invoke(this, new EventArgs { });
         keysCollected = 0;
     }
     private void Update()

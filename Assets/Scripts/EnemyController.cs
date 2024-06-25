@@ -69,7 +69,7 @@ public class EnemyController : MonoBehaviour
     void Update()
     {
         playerDist = (transform.position - player.transform.position).magnitude;
-        if (shouldPathTowardsPlayer())
+        if (ShouldPathTowardsPlayer())
         {
             path = FindPath(player);
         }
@@ -83,7 +83,7 @@ public class EnemyController : MonoBehaviour
         {
             Rotate();
         }
-        ManageCollissions();
+        ManageCollisions();
         ClearTraversedPath();
 
     }
@@ -103,7 +103,7 @@ public class EnemyController : MonoBehaviour
     }
 
 
-    private void ManageCollissions()
+    private void ManageCollisions()
     {
         int layerIgnoreCollision = LayerMask.NameToLayer("ignore collision");
         int layerDefault = LayerMask.NameToLayer("Default");
@@ -159,7 +159,7 @@ public class EnemyController : MonoBehaviour
         }
     }
 
-    private bool shouldPathTowardsPlayer()
+    private bool ShouldPathTowardsPlayer()
     {
         if (howManyTimesSeen > annoyanceLevel) return false;
         if (waitingAtPost) return false;
@@ -371,12 +371,12 @@ public class EnemyController : MonoBehaviour
         }
         else
         {
-            grid.GetXY(GameController.pathfinding.getNearestWalkableNodePosition(obj), out Px, out Py);
+            grid.GetXY(GameController.pathfinding.GetNearestWalkableNodePosition(obj), out Px, out Py);
         }
 
         if (!grid.GetGridObject(transform.position).isWalkable)
         {
-            Vector3 nearestWalkableNodePos = GameController.pathfinding.getNearestWalkableNodePosition(gameObject);
+            Vector3 nearestWalkableNodePos = GameController.pathfinding.GetNearestWalkableNodePosition(gameObject);
             grid.GetXY(nearestWalkableNodePos, out x, out y);
         }
         else

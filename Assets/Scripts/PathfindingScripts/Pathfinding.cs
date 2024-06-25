@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading;
 using UnityEngine;
 using UnityEngine.U2D;
 
@@ -19,7 +17,7 @@ public class Pathfinding
 
     public Pathfinding(int width, int height, float cellSize)
     {
-        grid = new Grid<PathNode>(width, height, cellSize, Vector3.zero, (Grid<PathNode> g, int x, int y) => new PathNode(x, y));
+        grid = new Grid<PathNode>(width, height, cellSize, Vector3.zero, (int x, int y) => new PathNode(x, y));
     }
 
     public Grid<PathNode> GetGrid() { return grid; }
@@ -140,7 +138,7 @@ public class Pathfinding
         }
     }
 
-    public Vector3 getNearestWalkableNodePosition(GameObject gameObject)
+    public Vector3 GetNearestWalkableNodePosition(GameObject gameObject)
     {
         float smallestNoPathZoneDist = float.MaxValue;
         Vector3 objPos = gameObject.transform.position;
@@ -229,7 +227,7 @@ public class Pathfinding
 
                 awayFromColliderCenter = (pointOnZoneSurface - objPos).normalized;
             }
-            UnityEngine.Debug.DrawLine(objPos, pointOnZoneSurface, Color.blue);
+            Debug.DrawLine(objPos, pointOnZoneSurface, Color.blue);
             while (!GetGrid().GetGridObject(objPos).isWalkable)
             {
                 objPos += awayFromColliderCenter;
@@ -287,8 +285,7 @@ public class Pathfinding
 
     private List<PathNode> CalculatePath(PathNode endNode)
     {
-        List<PathNode> path = new List<PathNode> ();
-        path.Add(endNode);
+        List<PathNode> path = new List<PathNode> { endNode };
         PathNode currentNode = endNode;
         while (currentNode.cameFromNode != null)
         {
