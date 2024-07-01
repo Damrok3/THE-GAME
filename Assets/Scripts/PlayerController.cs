@@ -10,7 +10,7 @@ public class PlayerController : MonoBehaviour
 {
     public float speed;
     public float playerStamina;
-    public int playerHealth = 2;
+    public int playerHealth = 3;
     public List<AudioClip> clips;
     public List<GameObject> healthbar;
     public Slider staminaBar;
@@ -49,12 +49,12 @@ public class PlayerController : MonoBehaviour
     {
         switch (playerHealth)
         {
-            case 2:
+            case 3:
                 break;
-            case 1:
+            case 2:
                 healthbar[2].SetActive(false); 
                 break;
-            case 0:
+            case 1:
                 healthbar[1].SetActive(false); 
                 break;
             default:
@@ -78,7 +78,7 @@ public class PlayerController : MonoBehaviour
         if(e.eventName == "playerHurt")
         {
             playerHealth --;
-            Mathf.Clamp(playerHealth, -1, 3);
+            Mathf.Clamp(playerHealth, 0, 3);
         }
     }
 
